@@ -520,3 +520,96 @@
 - **"열자마자 쓰기" 경험을 최우선으로 유지**
 
 → 모든 코드 구조는 이 UX를 지키기 위해 존재한다.
+
+---
+
+## 16) 개발 진행 상황 (구현 완료된 PR)
+
+> **목적**: 다음 작업 시 반드시 인지해야 하는 구현 상태를 기록한다.
+> **원칙**: 세션 종료 시 핵심 내용만 추가한다.
+
+---
+
+### 16.1 완료된 PR
+
+**✅ PR1 — 프로젝트 스캐폴딩 & 의존성 (완료: 2026-02-16)**
+- Next.js 15.1.6, TypeScript, Tailwind, Zustand, Dexie, TipTap 설치
+- 폴더 구조 생성 완료
+- 개발 서버: `pnpm dev` (포트: 3000)
+
+**✅ PR2 — Storage Foundation (완료: 2026-02-16)**
+- StorageAdapter 인터페이스 구현 (`lib/storage/adapter.ts`)
+- Dexie schema v1 구현 (`lib/storage/db.ts`)
+- IndexedDBAdapter 구현 완료 (`lib/storage/indexedDBAdapter.ts`)
+- 스모크 테스트 페이지: `/dev-storage`
+
+---
+
+### 16.2 현재 프로젝트 구조 (실제 구현)
+
+```
+/home/user/gangji/
+├── app/
+│   ├── layout.tsx
+│   ├── page.tsx                    # 메인 페이지 (임시)
+│   └── dev-storage/
+│       └── page.tsx                # 스모크 테스트 페이지
+├── components/
+│   └── common/                     # 공용 컴포넌트 (준비됨)
+├── features/                       # 기능 단위 폴더 (준비됨)
+├── lib/
+│   ├── storage/
+│   │   ├── adapter.ts             # StorageAdapter 인터페이스
+│   │   ├── db.ts                  # Dexie schema v1
+│   │   └── indexedDBAdapter.ts    # Dexie 기반 구현체
+│   └── utils/                      # 전역 유틸 (준비됨)
+├── store/                          # Zustand 스토어 (준비됨)
+└── types/
+    └── models.ts                   # Page, Bundle, Sprint, Period 타입
+```
+
+---
+
+### 16.3 Storage 계층 구현 상태
+
+**Dexie Schema (v1)**
+- `pages`: id, date, content, title, tabs, tags, bookmark, bundleId, createdAt, updatedAt
+- `bundles`: id, firstPageDate, lastPageDate, pageIds, createdAt, updatedAt
+- `sprints`: id, theme, startDate, endDate, periods, createdAt, updatedAt
+- `settings`: key, value
+
+**인덱스**
+- pages: date, bundleId, tabs (multi-entry), tags (multi-entry), bookmark, createdAt
+- bundles: firstPageDate, lastPageDate, createdAt
+- sprints: startDate, endDate, createdAt
+
+**구현된 메서드 (indexedDBAdapter.ts)**
+- Page CRUD: createPage, getPageByDate, updatePage, deletePage
+- Bundle CRUD: createBundle, getBundleById, updateBundle, deleteBundle
+- Sprint CRUD: createSprint, getActiveSprint, updateSprint, deleteSprint
+- Query 메서드: getPagesByDateRange, getBundlesByDateRange, getPagesByTabs, getPagesByTags, getBookmarkedPages
+
+---
+
+### 16.4 다음 작업 시 참조 사항
+
+**개발 서버 실행**
+```bash
+cd /home/user/gangji
+pnpm dev
+```
+
+**스모크 테스트**
+- URL: http://localhost:3000/dev-storage
+- 모든 Storage 작업(CRUD + Query) 검증 가능
+
+**데이터 구조 중요 사항**
+- content는 `JSONContent` 타입 (TipTap JSON 형식)
+- tabs는 array (multi-entry 인덱스)
+- tags는 array (multi-entry 인덱스)
+- bundleId는 nullable (단독 페이지 허용)
+
+**다음 작업(PR3)**
+- Layout 구현 (TopBar, LeftNav, Main, Bottom)
+- 달력 ↔ 백지 뷰 전환
+- Zustand store 초기 구조 (뷰 상태 관리)
