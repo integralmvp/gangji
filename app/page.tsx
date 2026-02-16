@@ -9,28 +9,29 @@ import CalendarSection from "@/components/layout/CalendarSection";
 import BlankEditor from "@/components/editor/BlankEditor";
 
 /**
- * Main Page - Gangji Layout (Grid 기반)
+ * Main Page - Gangji Layout (1-screen fixed, no scroll)
  *
- * Layout structure: "노트 한 장 + 좌측 인덱스"
+ * Layout structure: "노트 한 장 + 포스트잇 인덱스"
  * ┌────────────┬────────────────────────────┐
- * │            │ Header (날짜 + 뷰 전환)     │
+ * │ LogoSlot   │ NoteHeader                 │ <- 같은 높이
+ * ├────────────┼────────────────────────────┤
+ * │            │                            │
+ * │ IndexTabs  │ Calendar/Editor (1fr)      │
+ * │ (포스트잇)  │                            │
  * │            ├────────────────────────────┤
- * │  LeftNav   │                            │
- * │  (20%)     │  Main (Calendar | Editor)  │
- * │            │  (1fr)                     │
- * │            ├────────────────────────────┤
- * │            │ FlowSection (하단 메모칸)   │
+ * │            │ Memo (editor 시 숨김)       │
  * └────────────┴────────────────────────────┘
  *
- * View switching: calendar ↔ editor (state-based, no routing)
- * Default: editor (immediate writing)
+ * - 전체 100vh, overflow hidden (스크롤 없는 고정 화면)
+ * - 좌측 20%: 포스트잇 인덱스 탭
+ * - 우측 80%: 노트 한 장
  */
 export default function Home() {
   const { viewMode } = useUIStore();
 
   return (
-    <div className="h-screen grid grid-cols-[20%_80%]">
-      {/* LeftNav: 노트 인덱스 */}
+    <div className="h-screen overflow-hidden grid grid-cols-[20%_80%]">
+      {/* LeftNav: 포스트잇 인덱스 */}
       <LeftNav />
 
       {/* NoteLayout: 노트 한 장 */}
@@ -39,7 +40,7 @@ export default function Home() {
         main={
           viewMode === "calendar" ? <CalendarSection /> : <BlankEditor />
         }
-        flow={<FlowSection />}
+        flow={viewMode === "calendar" ? <FlowSection /> : null}
       />
     </div>
   );
