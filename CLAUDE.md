@@ -333,3 +333,190 @@
 
 ## 14) 한 문장 정의(팀/코드의 나침반)
 **Gangji는 “내 안의 힘(흐름)”을 내가 다루게 만드는, 백지 기반 Flow OS다.**
+
+---
+
+## 15) 코드 컨벤션
+
+> 목적: Gangji 프로젝트의 **일관성, 확장성, 유지보수성**을 확보한다.  
+> 원칙: 본 코드 컨벤션은 **CLAUDE.md 업데이트 시에도 절대 삭제/누락 금지**.
+
+---
+
+### 15.1 폴더 및 책임 규칙 (Next.js App Router + Feature 구조)
+
+- `app/` : 라우팅 및 페이지 조립 (비즈니스 로직 금지)
+- `components/common/` : 공용 컴포넌트 (2곳 이상 사용)
+- `features/{feature}/` : 기능 단위 루트
+  - `ui/` : feature 내부 UI 컴포넌트
+  - `sections/` : 화면 구성 단위 (조립/레이아웃)
+  - `hooks/` : 상태 및 이벤트 처리
+  - `utils/` : 변환/검증/보조 로직
+
+- `lib/`
+  - `storage/` : 저장소 계층 (Dexie + Adapter)
+  - `utils/` : 전역 유틸 함수
+
+- `types/` : 전역 타입 정의
+
+**중요**
+- `features/{feature}/components/` 폴더 생성 금지 → 반드시 `ui/` 사용
+- `app/` 내부에 상태/로직 작성 금지 (렌더 조립만 수행)
+
+---
+
+### 15.2 컴포넌트 크기 가드레일
+
+- 조립(컨테이너) 컴포넌트: **200줄 목표**
+- 단일 컴포넌트: **300줄 초과 금지**
+- 초과 시:
+  - `sections/` (구조 분리)
+  - `ui/` (단일 UI 분리)
+
+---
+
+### 15.3 UI / 상태 / 로직 분리 원칙
+
+- TSX(JSX) 내부에 계산/변환 로직 작성 금지
+- 데이터 변환/가공은 `utils/`에서 수행
+- 상태 및 핸들러는 `hooks/`로 분리
+
+**순수 함수 영역 규칙**
+- `lib/storage/`, `lib/utils/`, `features/*/utils/`
+  - React import 금지
+  - side-effect 최소화
+
+---
+
+### 15.4 Storage 계층 규칙 (Gangji 핵심 구조)
+
+- 모든 데이터 접근은 **StorageAdapter를 통해서만 수행**
+- UI / Store에서 Dexie 직접 접근 금지
+
+**구조**
+- `lib/storage/adapter.ts` : 인터페이스
+- `lib/storage/db.ts` : Dexie schema + versioning
+- `lib/storage/indexedDBAdapter.ts` : 구현체
+
+**규칙**
+- schema 변경 시 version 증가 필수
+- migration 로직 반드시 작성
+- 사용자 데이터 유지 최우선
+
+---
+
+### 15.5 상태 관리 규칙 (Zustand)
+
+- Zustand는 **단일 진실 소스 역할만 수행**
+- 비즈니스 계산 로직은 store 내부에 작성 금지 → utils로 분리
+- store는:
+  - 상태 정의
+  - CRUD 액션
+  - 간단한 흐름 제어만 담당
+
+- 상태가 커질 경우:
+  - feature 단위 store 분리 허용
+  - slice 구조 허용
+
+---
+
+### 15.6 타입 정책
+
+- `types/models.ts` : 핵심 도메인 타입 (Page, Bundle, Sprint, Period)
+- 필요 시:
+  - `types/ui.ts`
+  - `types/storage.ts`
+
+**규칙**
+- any 사용 금지 (불가피한 경우 주석 필수)
+- 타입 변환은 `utils/`에서 수행
+
+---
+
+### 15.7 에디터/데이터 포맷 규칙
+
+- 사용자 입력: 일반 텍스트 UX
+- 내부 저장: **TipTap JSON (고정)**
+
+**금지**
+- 에디터 내부에서 저장 포맷 변환 직접 처리
+→ 반드시 utils 레이어 사용
+
+---
+
+### 15.8 확장 대비 가드레일
+
+**sections 비대화 방지**
+- sections는 "조립/분기"만 담당
+- 내부 로직/UI는 ui 또는 hooks로 분리
+
+**hooks 비대화 방지**
+- 상태 + 이벤트만 담당
+- 계산/파생 로직은 utils 이동
+
+**검증 로직 분산 금지**
+- 모든 검증은 `utils/validation.ts` 집중
+
+---
+
+### 15.9 네이밍 규칙
+
+- 컴포넌트: `PascalCase.tsx`
+- 훅: `useXxx.ts`
+- 유틸: `camelCase.ts`
+- 타입: `PascalCase`
+
+**예시**
+- `BlankEditor.tsx`
+- `CalendarView.tsx`
+- `FlowSection.tsx`
+- `usePageStore.ts`
+
+---
+
+### 15.10 import / 의존성 규칙
+
+- 절대 경로 alias 사용: `@/`
+- 상대경로 깊이 3단계 이상 금지
+- 순환 의존성 금지
+
+---
+
+### 15.11 작업 청소 규칙 (필수)
+
+작업 종료 시 반드시 수행:
+
+- 미사용 파일 삭제
+- 미사용 export 제거
+- dead code 제거
+- import 정리
+
+---
+
+### 15.12 코드 품질 원칙
+
+- "빠르게" 만들되 "무너지지 않게" 만든다
+- 구조는 속도를 늦추는 것이 아니라 유지하는 장치다
+- 읽기 쉬운 코드 = 유지 가능한 코드
+
+---
+
+### 15.13 리뷰 체크리스트
+
+- app/에 비즈니스 로직이 들어가 있지 않은가?
+- TSX 내부에 계산 로직이 존재하지 않는가?
+- StorageAdapter를 우회하고 있지 않은가?
+- hooks가 비대해지지 않았는가?
+- 불필요한 코드가 남아있지 않은가?
+
+---
+
+### 15.14 Gangji 특화 규칙 (중요)
+
+- **UX를 깨는 구조 금지**
+  - 입력 지연 유발 구조 금지
+  - 불필요한 상태 동기화 금지
+- **Auto-save 흐름 방해 금지**
+- **"열자마자 쓰기" 경험을 최우선으로 유지**
+
+→ 모든 코드 구조는 이 UX를 지키기 위해 존재한다.
