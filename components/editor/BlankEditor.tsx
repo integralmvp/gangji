@@ -4,15 +4,10 @@ import { useEffect, useRef } from "react";
 
 /**
  * BlankEditor Component (Placeholder)
+ * "열자마자 쓰기" - 백지 몰입
  *
- * The core of Gangji: "Open and immediately write"
- *
- * PR4: Full implementation with:
- * - TipTap rich text editor
- * - Auto-focus on mount
- * - Auto-save (500ms debounce)
- * - Metadata (title, tabs, tags, bookmark)
- * - Bundle support
+ * PR3: 1-screen 레이아웃 (내부 스크롤)
+ * PR4: TipTap 에디터 + 자동 저장 구현
  *
  * Design: A4 paper feel, zero friction
  */
@@ -25,40 +20,39 @@ export default function BlankEditor() {
   }, []);
 
   return (
-    <div className="flex-1 p-8 bg-paper overflow-auto">
-      <div className="max-w-4xl mx-auto">
+    <div className="h-full overflow-y-auto bg-paper">
+      <div className="max-w-4xl mx-auto px-8 py-6">
         {/* Paper-like editor area */}
-        <div className="bg-white rounded-lg shadow-sm p-12 min-h-[842px] border border-paper-dark">
+        <div className="bg-white rounded-md shadow-sm p-8 min-h-[600px] border border-ink/10">
           {/* Title (optional) */}
           <input
             type="text"
             placeholder="무제"
-            className="w-full text-3xl font-bold text-ink bg-transparent border-none outline-none mb-8 placeholder:text-ink-light/30"
+            className="w-full text-2xl font-bold text-ink bg-transparent border-none outline-none mb-6 placeholder:text-ink-muted/40"
           />
 
           {/* Content area (Placeholder - PR4 will use TipTap) */}
           <textarea
             ref={textareaRef}
             placeholder="백지를 펼쳤습니다. 지금 바로 쓰세요."
-            className="w-full min-h-[600px] text-lg text-ink bg-transparent border-none outline-none resize-none placeholder:text-ink-light/30 leading-relaxed"
+            className="w-full min-h-[500px] text-base text-ink bg-transparent border-none outline-none resize-none placeholder:text-ink-muted/40 leading-relaxed"
           />
 
           {/* Implementation note */}
-          <div className="mt-8 pt-4 border-t border-paper-dark text-sm text-ink-light">
-            <p>PR4에서 TipTap 에디터 + 자동 저장 구현 예정</p>
-            <p className="mt-1">현재는 구조 확인용 플레이스홀더입니다</p>
+          <div className="mt-6 pt-4 border-t border-ink/10 text-xs text-ink-muted">
+            <p>PR4에서 TipTap 에디터 + 자동 저장 구현</p>
           </div>
         </div>
 
         {/* Metadata section (minimal, optional) */}
-        <div className="mt-6 flex gap-4 text-sm text-ink-light">
-          <button className="px-3 py-1 rounded bg-paper-light hover:bg-paper-dark transition-colors">
+        <div className="mt-4 flex gap-3 text-sm">
+          <button className="px-3 py-1.5 rounded bg-paper-light hover:bg-paper-dark transition-colors text-ink-muted border border-ink/10">
             + 탭
           </button>
-          <button className="px-3 py-1 rounded bg-paper-light hover:bg-paper-dark transition-colors">
+          <button className="px-3 py-1.5 rounded bg-paper-light hover:bg-paper-dark transition-colors text-ink-muted border border-ink/10">
             + 태그
           </button>
-          <button className="px-3 py-1 rounded bg-paper-light hover:bg-paper-dark transition-colors">
+          <button className="px-3 py-1.5 rounded bg-paper-light hover:bg-paper-dark transition-colors text-ink-muted border border-ink/10">
             ⭐ 북마크
           </button>
         </div>
