@@ -1,750 +1,335 @@
-# gangji - Flow Operating System
+# CLAUDE.md — Gangji (갱지) 프로젝트 기준 문서
+> **목적**: 이 문서는 Gangji를 “본질 그대로” 구현하기 위한 **최종 기준(레일)**이다.  
+> 앞으로의 모든 개발/리팩토링/출시는 이 문서를 기준으로 **일관되게** 진행한다.
 
---------------------------------------------------
-## 0. 프로젝트 정의
---------------------------------------------------
+---
 
-gangji는 생산성 도구가 아니다.
+## 1) 정체성 · 철학 · 지향점
 
-이 시스템은 **"흐름을 다루기 위한 인터페이스"**다.
+### 1.1 Gangji(갱지)란?
+- Gangji는 **생산성 도구(플래너/할일앱)**가 아니다.
+- Gangji는 **“흐름(Flow)을 다루기 위한 개인 OS”**다.
+- 사용자는 **정해진 틀을 채우지 않는다.**  
+  사용자는 **백지를 펼치고 즉시 기록한다.**  
+  구조(정리/분류/회고/계획)는 **나중에** 생긴다.
 
-### 핵심 철학
+### 1.2 핵심 원칙(변경 불가)
+- **Execute first, organize later** (선실행 후계획/후정리)
+- **Zero friction / Zero pressure / Zero guilt**
+  - 입력 강제 없음, 미작성 페널티 없음, 실패/경고 UI 없음
+  - 사용자가 “비는 칸”을 보며 죄책감을 느끼게 하는 UI 금지
+- 사용자는 **일(日) 단위가 아니라 “몰입 주기”**로 움직인다.
 
-```
-Execute first, organize later
-```
+---
 
-사용자는 계획하지 않는다.
+## 2) 행동 엔진: RUN → STAND → SIT (가장 중요, 절대 고정)
 
-사용자는 **"백지를 펼치고 바로 쓴다"**.
+### 2.1 Flow Cycle 정의
+- **RUN(달리기)**: 몰입/실행/출력(제약 최소)
+- **STAND(서기)**: 달린 후 복기/정리/다음 달리기 계획(연결)
+- **SIT(앉기)**: 휴식/저에너지 허용(압박 제거)
 
-구조는 나중에 생긴다.
+> 이 사이클은 선택 옵션이 아니라 **시스템의 핵심 동작 엔진**이다.
 
-### 근본 진실
+### 2.2 몰입기간(Immersion Period)
+- Gangji의 계획/운영 단위는 “하루”가 아니라 **“기간(Period)”**이다.
+- 사용자는 **테마 기반 몰입 기간**을 설정하고,
+- 그 기간을 **RUN/STAND/SIT 기간 조합**으로 운영한다.
+- 달력은 “일정표”가 아니라 **흐름 지도(Flow Map)**다.
 
-인간의 행동은 계획에 의해 제어되지 않는다. **"상태"**와 **"흐름"**에 의해 제어된다.
+---
 
-전통적인 시스템이 실패하는 이유:
-- 행동 전에 구조를 강요함
-- 선형적 시간 (일/주)을 가정함
-- 계획이 깨질 때 죄책감을 만듦
+## 3) 제품 경험의 핵심 UX: “백지 → 흐름”
 
-**gangji는 이것을 역전시킨다.**
+### 3.1 사용자 핵심 플로우
+1. **백지 펼치기**
+2. **즉시 작성(커서 자동 포커스)**
+3. **자동 저장(무의식 저장)**
+4. **달력에서 ‘흔적(존재)’ 확인**
+5. **몰입기간(RUN/STAND/SIT)로 흐름을 운영**
 
-행동이 먼저 온다. 구조는 나중에 온다.
+### 3.2 Gangji가 거부하는 UX
+- 할 일/완료율/스트릭/목표 달성률/붉은 경고/미작성 알림  
+→ **전부 금지**
 
---------------------------------------------------
-## 1. 핵심 행동 모델 (가장 중요)
---------------------------------------------------
+---
 
-이 시스템은 다음의 흐름 순환을 **반드시** 구현해야 한다:
+## 4) UI/UX 기준(구체 설계)
 
-```
-RUN (달리기) → STAND (서기) → SIT (앉기)
-```
-
-**이 흐름은 시스템의 중심이며 절대 변경할 수 없다.**
-
-### 각 상태의 정의
-
-**RUN (실행/몰입)**
-- 몰입 상태
-- 실행 중심
-- 통제되지 않은 출력 허용
-- 높은 에너지 상태
-- 시스템은 출력을 장려함
-
-**STAND (복기/정리)**
-- 반성/복기
-- 수행한 것을 검토
-- 다음 방향 정의
-- 통제력 회복
-- 시스템은 연결을 장려함 (과거 → 다음)
-
-**SIT (휴식)**
-- 휴식
-- 낮은 에너지 허용
-- 압박 없음
-- 비활동 허용
-- 시스템은 압박을 제거함
-
-### 몰입주간 (Weekly Immersion)
-
-**사용자는 일 단위로 움직이지 않는다. 몰입 주기로 움직인다.**
-
-각 몰입 주기:
-- 테마를 가짐
-- RUN/STAND/SIT로 구성된 주간들로 이루어짐
-- 일간 단위가 아닌 주간 기반 흐름
-
-**시스템은 반드시 이것을 1차 구조로 지원해야 한다.**
-
-### 행동 의미
-
-이것은 선택 사항이 아니다. 이것은 시스템의 **핵심 행동 엔진**이다.
-
-사용자는:
-- RUN 중에는 제약 없이 쏟아냄
-- STAND 중에는 복기하고 정리함
-- SIT 중에는 쉬어도 됨
-
-시스템은 각 상태에 맞는 UI와 안내를 제공하되, **절대 강요하지 않는다**.
-
---------------------------------------------------
-## 2. 기술 스택 (고정)
---------------------------------------------------
-
-다음 기술 스택은 변경할 수 없다:
-
-- **Next.js** (App Router)
-- **TypeScript**
-- **TailwindCSS**
-- **Zustand** (상태 관리)
-- **IndexedDB (Dexie)** (로컬 저장소)
-- **TipTap Editor** (에디터)
-
---------------------------------------------------
-## 3. 아키텍처 원칙
---------------------------------------------------
-
-### 3.1 Local-first (필수)
-
-- 서버 없음
-- 인증 없음
-- 로그인 없음
-- 모든 데이터는 로컬 저장
-- 사용자가 자신의 데이터를 완전히 소유
-
-**이것은 협상 불가능하다.**
-
-### 3.2 StorageAdapter 필수
-
-앱은 저장 방식에 의존하면 안 된다.
-
-```typescript
-interface StorageAdapter {
-  // Page operations
-  savePage(page: Page): Promise<void>
-  getPage(id: string): Promise<Page | null>
-  getPageByDate(date: string): Promise<Page | null>
-  listPages(): Promise<Page[]>
-  deletePage(id: string): Promise<void>
-
-  // Bundle operations
-  saveBundle(bundle: Bundle): Promise<void>
-  getBundle(id: string): Promise<Bundle | null>
-  listBundles(): Promise<Bundle[]>
-  deleteBundle(id: string): Promise<void>
-
-  // Sprint operations
-  saveSprint(sprint: Sprint): Promise<void>
-  getSprint(id: string): Promise<Sprint | null>
-  getCurrentSprint(): Promise<Sprint | null>
-  listSprints(): Promise<Sprint[]>
-  deleteSprint(id: string): Promise<void>
-
-  // Query operations
-  getPagesByTag(tag: string): Promise<Page[]>
-  getPagesByTab(tab: string): Promise<Page[]>
-  getBookmarkedPages(): Promise<Page[]>
-}
-```
-
-**현재:** IndexedDB (Dexie)
-**미래:** SQLite (Tauri/Capacitor) / File system
-
-### 3.3 데이터 안정성
-
-- **Dexie versioning** 적용
-- schema 변경 시 **migration** 지원
-- content는 **TipTap JSON**으로 저장
-- **export 기능**으로 데이터 보호 (JSON)
-- 사용자는 언제든 데이터를 추출할 수 있어야 함
-
---------------------------------------------------
-## 4. 데이터 모델
---------------------------------------------------
-
-### Page
-
-```typescript
-type Page = {
-  id: string              // nanoid
-  date: string            // YYYY-MM-DD
-  title?: string          // optional
-  content: string         // TipTap JSON
-  tabs: string[]          // 탭 (메타 분류)
-  tags: string[]          // 태그
-  bookmarked: boolean     // 북마크 여부
-  bundleId?: string       // 연속 작성 묶음 ID
-  createdAt: string       // ISO timestamp
-  updatedAt: string       // ISO timestamp
-}
-```
-
-### Bundle
-
-```typescript
-type Bundle = {
-  id: string              // nanoid
-  title: string           // 묶음 제목
-  pageIds: string[]       // 속한 Page ID들
-  startDate: string       // YYYY-MM-DD
-  endDate: string         // YYYY-MM-DD
-  createdAt: string
-  updatedAt: string
-}
-```
-
-**중요:** UI는 주로 **Bundle 중심**으로 동작해야 한다. Page는 내부 단위.
-
-### Sprint (몰입주간)
-
-```typescript
-type Sprint = {
-  id: string              // nanoid
-  theme: string           // 몰입 테마 (1줄)
-  startDate: string       // YYYY-MM-DD
-  endDate?: string        // 종료 시 설정
-  weeks: Week[]           // 주간 배열
-  createdAt: string
-  updatedAt: string
-}
-```
-
-### Week
-
-```typescript
-type Week = {
-  type: 'run' | 'stand' | 'sit'  // 주간 유형
-  goal: string                    // 주간 목표 (1줄, 짧게)
-  startDate: string               // 해당 주의 시작일 (YYYY-MM-DD)
-}
-```
-
---------------------------------------------------
-## 5. UI/UX 구조
---------------------------------------------------
-
-### 5.1 전체 레이아웃
+### 4.1 전체 레이아웃(고정)
+- **Landing(메인)**: 중앙 **약 80%** 영역에 3개월 달력
+- **LeftNav**: 좌측 세로 네비게이션(탭/포스트잇 느낌)
+- **TopBar**: 상단에 날짜 + 뷰 전환(달력↔백지)
+- **Bottom**: 하단 몰입기간(Flow) 관리 섹션
 
 ```
-┌─────────────────────────────────────────────────┐
-│ TopBar                                          │
-├──────┬──────────────────────────────────────────┤
-│ Left │ Main Area (80%)                          │
-│ Nav  │                                          │
-│      │ - Calendar View (흐름 지도)              │
-│      │ - Blank Editor (백지 입력)               │
-│      │                                          │
-├──────┴──────────────────────────────────────────┤
-│ Bottom Flow Section (Sprint 표시)               │
-└─────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────────────────────────┐
+│ TopBar: 날짜 / [달력]↔[백지] 전환 / (선택: 현재 테마)      │
+├───────────────┬───────────────────────────────────────────┤
+│ LeftNav        │ Main(≈80%)                                │
+│ - Recent       │ ① Calendar View (3개월)                   │
+│ - Tabs         │ ② Blank Editor (백지)                     │
+│ - Tags(보관소) │                                           │
+│ - Bookmarks    │                                           │
+│ - Search       │                                           │
+├───────────────┴───────────────────────────────────────────┤
+│ Bottom Flow Section: 몰입기간(테마/주간 RUN-STAND-SIT)      │
+└───────────────────────────────────────────────────────────┘
+
 ```
 
-**TopBar:**
-- 뷰 전환 버튼 (Calendar ↔ Editor)
-- 북마크 토글 버튼
-- 네비게이션 컨트롤
-
-**LeftNav:**
-- Bookmarks 목록
-- Tabs 목록
-- Tags 클라우드
-
-**Main Area:**
-- Calendar View 또는 Blank Editor 표시
-- 80% 너비
-
-**Bottom Flow Section:**
-- 현재 Sprint 표시
-- RUN/STAND/SIT 주간 스트립
-
-### 5.2 뷰 전환 (핵심 동작)
-
-Main Area는 다음 두 뷰를 토글:
-
-1. **Calendar View** - 흐름 시각화
-2. **Blank Editor** - 백지 입력
-
-사용자는 클릭 한 번으로 전환 가능해야 한다.
-
-### 5.3 Calendar (흐름 지도)
-
-**달력은 계획용이 아니다. "흐름 지도"다.**
-
-Calendar가 보여주는 것:
-- 기록의 **존재** (백지 아이콘 또는 점)
-- 몰입 기간 (플래그 또는 강조)
-- 흐름 상태 (RUN/STAND/SIT)
-
-**시각화 규칙:**
-- 빈 날에 대한 페널티 없음
-- 빨강/에러 상태 없음
-- **존재만 시각화**
-
-**색상 로직:**
-- **Grey** = 계획된 / 할당된
-- **Colored** = 실제 상호작용 발생
-
-**존재 기준:**
-- **ANY interaction** (쓰기, 열기 등)
-- 완료 여부 아님
-
-**동작:**
-- 날짜 클릭 → 해당 날짜의 Page 로드 → Editor로 전환
-- 존재하지 않으면 자동 생성
-
-### 5.4 Blank Editor (핵심 인터페이스)
-
-**이것이 가장 중요한 부분이다.**
-
-#### 진입
-
-사용자가 "Open Blank" 클릭 시:
-
-시스템은 **반드시**:
-- 즉시 에디터 열기
-- 커서를 content 영역에 포커스
-- **중간 단계 없음**
-
-**1초 내에 타이핑 가능해야 한다.**
-
-#### 쓰기 행동
-
-사용자는 반드시:
-- 즉시 타이핑 시작 가능
-- 모든 메타데이터 무시 가능
-- 구조 없이 쓰기 가능
-
-#### 메타데이터 (2차)
-
-다음은 **선택 사항**:
-- title
-- tabs
-- tags
-- bookmark
-- bundle (연속 작성)
-
-**이것들은 쓰기를 차단해서는 안 된다.**
-
-#### 저장
-
-- **auto-save** 항상
-- **저장 버튼 없음**
-- **확인 없음**
-- 500ms debounce로 자동 저장
-
-#### 에디터 모델
-
-- 사용자 입력: plain text (rich)
-- 내부 저장: TipTap JSON
-
-### 5.5 Sprint System (하단 섹션)
-
-**이것은 시스템의 제어 레이어다.**
-
-#### 구조
-
-각 몰입 주기:
-- 테마
-- 기간
-- 주간들로 구성
-
-각 주간:
-- 유형: RUN / STAND / SIT
-- 목표: 짧은 텍스트 (1줄)
-- 시작일
-
-#### UI 표현
-
-하단 섹션은 다음을 포함:
-
-**(1) Current Flow Card**
-- 테마
-- 기간
-- 현재 상태
-- 목표
-
-**(2) Week Strip**
-
-시각적 표현:
-```
-[ STAND ][ RUN ][ RUN ][ SIT ]
-```
-
-**색상:**
-- RUN: 빨강
-- STAND: 노랑
-- SIT: 파랑
-
-#### 상호작용
-
-- **Hover:** 설명 표시
-- **Click:** 주간 편집
-
---------------------------------------------------
-## 6. UX 절대 규칙
---------------------------------------------------
-
-다음 규칙은 **기능보다 우선한다**:
-
-1. **클릭 후 1초 내 입력 가능**
-2. **저장 버튼 없음**
-3. **입력 차단 없음**
-4. **실패/경고 UI 없음**
-5. **선택지는 3개 이하**
-
-사용자는:
-- 생각하지 않고 열고
-- 생각하지 않고 쓰고
-- 생각하지 않고 닫는다
-
-시스템은:
-- 방해하지 않고
-- 저장하고
-- 보여준다
-
-**"이 규칙은 기능보다 우선한다."**
-
---------------------------------------------------
-## 7. 에디터 규칙
---------------------------------------------------
-
-### 허용 기능
-
-- **bold** / **italic** / **underline**
-- **heading** (h1, h2, h3)
-- **list** (bullet, numbered)
-- **highlight**
-- **color** (텍스트 색상)
-
-### 금지 기능
-
-- 폰트 선택
-- 폰트 크기 직접 선택
-- 복잡한 스타일 UI
-- 표 (table)
-- 이미지 업로드 (Phase A에서는)
-
-**에디터는 가볍고 빨라야 한다.**
-
---------------------------------------------------
-## 8. 금지 사항
---------------------------------------------------
-
-다음 기능은 **절대 구현하지 않는다**:
-
-- ❌ todo / 체크리스트
-- ❌ 일정 관리
-- ❌ 스트릭 / 점수 시스템
-- ❌ 완료율
-- ❌ 목표 달성률
-- ❌ 서버 기능
-- ❌ 강제 입력
-- ❌ 일일 알림/리마인더
-- ❌ 소셜 기능
-- ❌ 공유 기능 (Phase A)
-
-**gangji는 사용자의 흐름을 신뢰하고 비켜선다.**
-
---------------------------------------------------
-## 9. 디자인 언어
---------------------------------------------------
-
-### 컨셉
-
-**아날로그 백지 노트 (갱지)**
-
-gangji는 종이 백지에서 영감을 받았다.
-
-### 특성
-
-- **따뜻한 종이 색감** (#fefdfb 배경)
-- **부드러운 그림자** (shadow-sm)
-- **최소한의 테두리**
-- **가볍고 차분한 느낌**
-- **비기술적 (non-technical)**
-
-### UI 금지 사항
-
-- ❌ 대시보드 느낌
-- ❌ 복잡한 차트
-- ❌ 강렬한 색상
-- ❌ 위협적인 UI
-
-**사용자는 편안함을 느껴야 한다.**
-
-### 색상 전략
-
-- **Grey** = 계획된/할당된
-- **Colored** = 실제 상호작용 발생
-- **Green** = 존재 표시 (달력)
-- **Yellow** = 북마크
-- **Red** = RUN
-- **Yellow** = STAND
-- **Blue** = SIT
-
---------------------------------------------------
-## 10. 전체 개발 로드맵
---------------------------------------------------
-
-### Phase A — Local MVP (즉시 사용)
-
-**목표:** 사용자가 오늘부터 사용 가능
-
-**구현:**
-- 백지 입력
-- 자동 저장
-- 달력 시각화
-- 몰입주간 (RUN/STAND/SIT)
-
-**완료 기준:**
-- 앱을 열고 즉시 쓸 수 있음
-- 달력에서 기록 확인 가능
-- Sprint 생성 및 표시 가능
-
-### Phase B — 제품 완성도
-
-**목표:** 실용적 도구로 성장
-
-**구현:**
-- 태그/탭/북마크 필터링
-- 검색 (전체 텍스트)
-- 데이터 백업/복구 (JSON export/import)
-- 성능 최적화 (대량 페이지 처리)
-
-### Phase C — 플랫폼 확장
-
-**목표:** PC/모바일 동일 경험
-
-**구현:**
-- Desktop: Tauri + SQLite
-- Mobile: Capacitor + SQLite
-- 동기화 (로컬 우선, 선택적)
-
-**Storage 전환:**
-- IndexedDB → SQLite
-- StorageAdapter 덕분에 비즈니스 로직 변경 없음
-
---------------------------------------------------
-## 11. Phase A - 오늘 개발 목표 (절대 기준)
---------------------------------------------------
-
-**다음 5가지를 반드시 구현:**
-
-1. **백지 펼치기 → 즉시 타이핑**
-   - 앱 열기 → Editor 자동 열림 → 커서 포커스 → 타이핑
-   - 1초 내 완료
-
-2. **자동 저장 + 재접속 시 복원**
-   - 500ms debounce 자동 저장
-   - 앱 재시작 시 오늘 페이지 자동 로드
-
-3. **달력 ↔ 에디터 전환**
-   - TopBar에서 뷰 토글
-   - 달력 날짜 클릭 → 에디터로 전환 + 해당 날짜 페이지 로드
-
-4. **기록 존재 날짜 표시**
-   - 달력에 초록 점 (또는 아이콘)
-   - 내용이 있는 날짜 시각화
-
-5. **몰입주간 생성 및 표시**
-   - Sprint 생성 UI
-   - RUN/STAND/SIT 주간 설정
-   - 하단 섹션에 Week Strip 표시
-
-**이 상태 = "실사용 가능 상태"**
-
---------------------------------------------------
-## 12. Phase A - PR 기반 실행 계획
---------------------------------------------------
-
-### PR1 — Storage
-
-**구현:**
-- `/types/*.ts` - Page, Bundle, Sprint, Week 타입 정의
-- `/lib/storage/adapter.ts` - StorageAdapter 인터페이스
-- `/lib/storage/db.ts` - Dexie schema + versioning
-- `/lib/storage/indexedDBAdapter.ts` - Adapter 구현
-- `/lib/storage/storage.ts` - Singleton 서비스
-
-**완료 조건:**
-- 모든 CRUD 동작 테스트 완료
-- IndexedDB에서 데이터 확인 가능
-
-### PR2 — Layout
-
-**구현:**
-- `/components/layout/TopBar.tsx` - 뷰 전환, 북마크 토글
-- `/components/layout/LeftNav.tsx` - 접을 수 있는 사이드바
-- `/components/layout/FlowSection.tsx` - Sprint 표시
-- `/app/layout.tsx` - 전체 레이아웃 조립
-
-**완료 조건:**
-- 레이아웃 렌더링 확인
-- TopBar 뷰 전환 동작
-
-### PR3 — Editor (핵심)
-
-**구현:**
-- `/components/editor/BlankEditor.tsx` - TipTap 에디터
-  - autofocus: 'end'
-  - onUpdate + 500ms debounce
-  - Placeholder 확장
-  - Prose 스타일링
-- `/store/pageStore.ts` - 페이지 상태 관리
-  - loadTodayPage()
-  - updatePageContent() - debounced
-  - updatePageTitle/addTag/removeTag/toggleBookmark()
-- `/app/page.tsx` - 메인 진입점
-  - useEffect로 오늘 페이지 로드
-  - Editor 렌더링
-
-**완료 조건:**
-- 앱 열기 → 즉시 타이핑 가능 (< 1초)
-- 자동 저장 동작 확인
-- 재시작 시 내용 복원 확인
-
-### PR4 — Calendar
-
-**구현:**
-- `/app/calendar/page.tsx` - Calendar 라우트
-- `/components/calendar/CalendarView.tsx` - 월 그리드
-  - date-fns 사용
-  - 이전/다음 월, 오늘 버튼
-- `/components/calendar/CalendarDay.tsx` - 날짜 셀
-  - 날짜 번호
-  - 초록 점 (내용 존재 시)
-  - 노랑 별 (북마크 시)
-  - 클릭 → 페이지 로드 → Editor 전환
-
-**완료 조건:**
-- 달력 렌더링 확인
-- 내용 있는 날짜에 초록 점 표시
-- 날짜 클릭 시 페이지 로드 확인
-
-### PR5 — Sprint
-
-**구현:**
-- `/components/sprint/SprintDisplay.tsx` - Sprint 카드
-- `/components/sprint/WeekCard.tsx` - 주간 카드
-  - RUN (빨강), STAND (노랑), SIT (파랑)
-- `/store/sprintStore.ts` - Sprint 상태 관리
-  - loadCurrentSprint()
-  - createSprint(theme, weeks[])
-
-**완료 조건:**
-- Sprint 생성 가능
-- 하단 섹션에 Week Strip 표시
-- 색상 구분 확인
-
-### PR6 — Editor Tools
-
-**구현:**
-- TipTap 확장: Highlight, Color, TextStyle
-- Bubble menu (선택 시 나타남)
-- Toolbar (bold, italic, underline, heading, list)
-
-**완료 조건:**
-- 모든 허용 기능 동작 확인
-- Bubble menu 표시 확인
-
-### PR7 — Backup
-
-**구현:**
-- Export JSON (모든 데이터)
-- Import JSON (복구)
-- `/lib/utils/export.ts` - export 로직
-
-**완료 조건:**
-- Export 파일 다운로드 확인
-- Import 시 데이터 복구 확인
-
---------------------------------------------------
-## 13. 구현 우선순위
---------------------------------------------------
-
-다음 순서로 구현:
-
-1. **Layout** (기반)
-2. **Blank Editor** (핵심)
-3. **Local storage** (데이터)
-4. **Calendar visualization** (흐름 지도)
-5. **Flow system (Sprint)** (행동 모델)
-
-**Editor가 가장 중요하다.** 이것이 동작하지 않으면 나머지는 의미 없다.
-
---------------------------------------------------
-## 14. 성공 기준
---------------------------------------------------
-
-사용자가 생각하지 않고
-
-앱을 열고
-→ 바로 쓰고
-→ 자연스럽게 이어서 쓰는 것
-
-**이게 가능하면 성공이다.**
-
-### 구체적 검증
-
-1. **즉시 쓰기:**
-   - 앱 열기 → 1초 내 타이핑 시작 가능
-
-2. **자동 저장:**
-   - 타이핑 → 자동 저장 → 재시작 → 내용 복원
-
-3. **흐름 시각화:**
-   - 달력에서 기록 존재 확인
-   - 빈 날에 대한 죄책감 없음
-
-4. **몰입 주기:**
-   - Sprint 생성 → Week Strip 표시
-   - RUN/STAND/SIT 구분 명확
-
-5. **압박 없음:**
-   - 저장 버튼 없음
-   - 에러 메시지 없음
-   - 강제 입력 없음
-
-**사용자는 편안함을 느껴야 한다.**
-
---------------------------------------------------
-## 15. 최종 정의
---------------------------------------------------
-
-gangji는 도구가 아니다.
-
-이것은
-
-**"내 안의 흐름을 내가 다루게 만드는 시스템"**
-
-이다.
-
-### 핵심 원칙 재확인
-
-1. **Execute first, organize later**
-   - 행동이 먼저, 구조는 나중
-
-2. **RUN → STAND → SIT**
-   - 인간의 에너지 순환을 존중
-
-3. **Blank-first interface**
-   - 백지를 펼치는 순간부터 시작
-
-4. **No pressure**
-   - 시스템은 압박하지 않는다
-
-5. **Local-first**
-   - 사용자가 자신의 데이터를 소유
-
-### 최종 목표
-
-사용자가 자신의 내면 혼돈을 제어하는 것이 아니라,
-
-**흐름을 통해 형태화하도록 돕는다.**
-
-gangji는 사용자의 흐름을 신뢰하고 비켜선다.
-
-그것이 이 시스템의 존재 이유다.
+---
+
+### 4.2 Calendar View(달력) — “계획표가 아닌 흐름 지도”
+**표시해야 하는 것**
+- 📄 **백지 기록 존재**(그날 기록이 있음을 표시)
+- 🚩 **몰입 테마(기간)** 표시(깃발 + 범위 하이라이트)
+- 🧍/🏃/🪑 **기간 타입(RUN/STAND/SIT)** 표시(기간 단위)
+
+**표시하지 말아야 하는 것**
+- 빈 날 경고/빨간 표시/미작성 부채감 UI 금지
+
+**색상/표시 로직(중요)**
+- **무채색(회색) = 계획/할당 상태**
+- **유채색 = 실제 상호작용이 있었음(흔적)**
+- “완료”가 아니라 **“존재(presence)”**를 시각화한다.
+
+**동작**
+- 날짜 클릭 → 해당 날짜의 Page(또는 Bundle) 열기 → 자동으로 에디터 뷰 전환
+- 해당 날짜 기록이 없으면 → **즉시 생성**(마찰 없이)
+
+---
+
+### 4.3 Blank Editor(백지) — “즉시 쓰기”
+**진입**
+- TopBar의 **[백지 펼치기]** 또는 날짜 클릭으로 진입
+- **중간 단계/모달/폼 금지**
+- 열리자마자 **커서 자동 포커스**, 1초 내 타이핑 가능
+
+**작성**
+- 사용자는 “일반 언어”로 쓴다(마크다운 강제 금지)
+- 시스템 내부 저장은 구조화된 포맷(리치텍스트)로 유지
+- 1장 당 A4 문서 규격 단위로 작성(추후 인쇄 기능 추가)
+
+**자동 저장**
+- 저장 버튼 없음
+- 500ms 내 디바운스 자동 저장
+- 앱 재실행/새로고침에도 복원
+
+**메타데이터(선택/차단 금지)**
+- title(무제 허용)
+- tabs(복수 선택)
+- tags(복수 선택, 보관소)
+- bookmark 토글
+- 이어쓰기(묶음) 토글
+
+**이어쓰기(Bundle)**
+- 한 번의 작성 흐름이 여러 장(페이지)로 이어질 수 있음
+- 이어진 페이지는 **한 묶음(Bundle)**으로 관리(목록/네비게이션 단위)
+
+---
+
+### 4.4 LeftNav(페이지 관리) — “정리는 나중”
+초기 MVP에서는 UI 뼈대 + 핵심만 우선 구현한다.
+- Recent(최근 기록 묶음/페이지)
+- Tabs(탭 트리) : 한 페이지 당 하나 이상의 탭 설정 가능 / 플랫폼 기본 고정 탭 몰입탭(stand/run/sit 세개의 하위 탭)
+- Tags(보관소: 태그 클라우드/목록)
+- Bookmarks(북마크 목록)
+- Search(단순 검색 → 고도화는 Phase B)
+- 페이지 쪽수 관리
+
+---
+
+### 4.5 Bottom Flow Section(몰입기간 관리) — “제어 레이어”
+**기능**
+- 사용자가 직접 몰입 테마/기간 설정
+- 사용자가 지정한 날짜, 기간으로 RUN/STAND/SIT 설정
+- 각 RUN/STAND/SIT 에 목표 1줄 설정
+- 호버/클릭 시 주간 설명/목표 노출
+
+**UI 구성**
+1) **Current Flow Card**
+- theme / 기간 / 현재 기간 타입 / 목표(1줄)
+- 수정 / 종료 / 새 몰입
+
+2) **Flow Strip**
+- 예: `[ STAND ][ RUN ][ RUN ][ SIT ]`
+- hover: 기간 정보(기간/목표)
+- click: 기간 편집(타입 3개 + 목표 1줄)
+
+---
+
+## 5) 디자인 언어(갱지 감성) 기준
+- 컨셉: **갱지 무지노트의 아날로그 감성**, 가볍고 산뜻
+- 배경: 따뜻한 베이지/종이 톤 (예: `#F5E9DA` 계열)
+- 텍스트: 다크 브라운 계열
+- 포인트: 형광펜(하이라이트) 중심
+- LeftNav: 노트 탭/포스트잇 스타일
+- 금지: 대시보드 느낌, 강한 테크 UI, 과한 차트/경고/빨강 페널티
+
+---
+
+## 6) 문서 작업 보조 툴(에디터 최소 필수)
+> “입력 장벽을 올리지 않으면서도 문서 작성이 가능해야 함”
+
+**필수(Phase A부터)**
+- 굵게/기울임/밑줄
+- 말머리/제목(H1~H3) *(폰트 크기 직접 조절 대신)*
+- 글머리표/번호 목록
+- 텍스트 색상(제한된 팔레트 6~8)
+- 형광펜(Highlight) — **시그니처 기능**
+- 빠른 기호 삽입(• → ✓ ★ 등)
+
+**UX 방식**
+- 기본은 미니(숨김)
+- 텍스트 선택 시 BubbleMenu
+- 문단 시작 또는 `/` 입력 시 슬래시 커맨드(선택)
+
+**금지(초기)**
+- 폰트 선택(다중 폰트)
+- 폰트 크기 자유 조절 UI
+- 표/이미지 업로드(Phase A 제외)
+
+---
+
+## 7) 기술 스택 & 구조(로컬 퍼스트 + 향후 PC/모바일)
+### 7.1 고정 스택(Phase A)
+- Next.js(App Router) + TypeScript
+- TailwindCSS
+- Zustand
+- IndexedDB(Dexie)
+- TipTap
+
+### 7.2 로컬 퍼스트 원칙(협상 불가)
+- 서버 없음, 로그인 없음, 인증 없음
+- 데이터는 로컬 저장, 사용자가 완전 소유
+
+### 7.3 StorageAdapter(필수) — 추후 확장 대비
+- 앱 로직은 저장소에 직접 의존 금지
+- **StorageAdapter 인터페이스**로만 접근
+- 현재 구현: IndexedDB(Dexie)
+- 향후 구현(구조만 열어둠): Desktop(Tauri)+SQLite / Mobile(Capacitor)+SQLite / File-based
+
+### 7.4 데이터 유지(실사용 + 개발 병행)
+- Dexie **versioning + migration scaffold** 필수
+- content 포맷: **TipTap JSON 고정**
+- 최소 안전장치: **Export(JSON)**
+  - 개발 중에도 사용자 데이터 유실 방지
+  - Import는 Phase B에서 구현 가능
+
+---
+
+## 8) 데이터 모델(기준)
+- Page: 날짜 기반 기록 단위(내부 단위)
+- Bundle: 이어쓰기/연속 기록의 관리 단위(**UI 기준 단위**)
+- Sprint: 몰입 테마/기간 배열
+- Period: run/stand/sit + 목표(1줄) + startDate
+
+> Page는 “낱장”, Bundle은 “묶음(실사용 단위)”.
+
+---
+
+## 9) 개발 → 출시 청사진(전체 로드맵)
+### Phase A: Local MVP (즉시 사용, 오늘부터 기록)
+- 백지 입력(즉시 타이핑)
+- 자동 저장/복원
+- 3개월 달력(흔적 표시)
+- 몰입기간(RUN/STAND/SIT) 기본 운영
+- 에디터 최소 문서 툴 + 하이라이트
+- Export(JSON) (최소 안전장치)
+
+### Phase B: 제품 완성도(내구성/편의)
+- Tabs/Tags/Bookmarks 실제 필터링 완성
+- Search 고도화(제목/본문/태그)
+- Export/Import 완성(복구 포함)
+- 성능 최적화(페이지 100+에서도 달력/검색 빠르게)
+- PWA 안정화(오프라인/설치 경험)
+
+### Phase C: 앱 출시(PC/모바일)
+- Desktop: Tauri 쉘 + SQLite Adapter
+- Mobile: Capacitor 쉘 + SQLite Adapter
+- 연동(동기화)은 “나중”
+  - 1차: Export/Import 기반 수동 연동
+  - 2차: 폴더/클라우드 기반 동기
+  - 3차: 충돌 해결 포함 양방향 Sync 엔진
+
+---
+
+## 10) 개발 시작 목표(“바로 써지는 Gangji” 기준)
+**2/16 Definition of Done (필수 5개)**
+1. 백지 펼치기 → 즉시 타이핑(커서 자동 포커스)
+2. 자동 저장(500ms) + 새로고침/재실행 복원
+3. 달력 ↔ 백지 전환
+4. 달력에 기록 존재 표시(📄/dot)
+5. 몰입기간 생성/표시(RUN/STAND/SIT + 목표 1줄 + 스트립)
+
+> 이 5개가 되면 오늘부터 실사용 시작.
+
+---
+
+## 11) PR 단위 실행 계획(개발 기준)
+> 원칙: **작동 우선 → 사용 → 피드백 → 개선**  
+> 실사용 데이터는 유지되도록 versioning/Export를 반드시 포함.
+
+### PR1 — 프로젝트 스캐폴딩 & 의존성
+- Next.js(App Router), TS, Tailwind, Zustand, Dexie, TipTap 설치
+- 폴더 구조 생성(`/components /store /lib/storage /types`)
+- 기본 레이아웃 라우팅 준비
+
+### PR2 — Storage Foundation (Adapter + Dexie + Versioning)
+- StorageAdapter 인터페이스 정의
+- Dexie schema + versioning/migration scaffold
+- 기본 CRUD + 날짜 기반 로드 지원
+
+### PR3 — Layout(그릇) + 뷰 전환
+- TopBar(날짜/토글) + LeftNav(뼈대) + Main(달력/백지) + Bottom(Flow)
+- 달력↔백지 토글 즉시 동작
+
+### PR4 — Blank Editor(핵심) + Auto-save/Restore
+- “열자마자 쓰기” 구현(autofocus)
+- 500ms debounce auto-save
+- 오늘 페이지 자동 생성/로드
+- title/메타는 선택(차단 금지)
+
+### PR5 — Calendar(3개월) + 기록 존재 표시 + 날짜 클릭 로드
+- 전월/현재/다음월 3개월 표시
+- 기록 존재 표시(📄/dot)
+- 날짜 클릭 → 해당 페이지(없으면 생성) → 에디터로 전환
+
+### PR6 — Sprint/Flow System(RUN/STAND/SIT) 기본 구현
+- 테마/기간 설정
+- 기간 스트립(hover/click 편집)
+- 달력에 몰입 기간 하이라이트(최소)
+
+### PR7 — Editor Tools(문서 툴) 최소 구현
+- Bold/Italic/Underline, Heading, List
+- Highlight + Text Color
+- BubbleMenu + Slash command(간단)
+
+### PR8 — Export(JSON) 안전장치(최소)
+- 전체 데이터 Export(JSON)
+- Import는 Phase B에서
+
+---
+
+## 12) 검증 체크리스트(매 PR 공통)
+- 앱 열면 **1초 내 작성 가능**
+- 저장 버튼 없음 / 입력 차단 없음
+- 새로고침 후 데이터 유지
+- 달력은 “흔적”만 보여줌(페널티 없음)
+- RUN/STAND/SIT 흐름이 UI/데이터에서 깨지지 않음
+
+---
+
+## 13) 절대 금지(재확인)
+- todo/체크리스트 중심
+- 스트릭/점수/완료율/강제 알림
+- 서버/로그인/계정
+- 미작성 경고/페널티 UI
+- UI에서 한 번에 선택지 3개 초과
+
+---
+
+## 14) 한 문장 정의(팀/코드의 나침반)
+**Gangji는 “내 안의 힘(흐름)”을 내가 다루게 만드는, 백지 기반 Flow OS다.**
