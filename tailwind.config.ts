@@ -9,15 +9,16 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Gangji 감성: 갱지 무지노트의 아날로그 감성
+        // Gangji 감성: 연한 그레이 종이톤 (노트 느낌)
         paper: {
-          DEFAULT: "#F5E9DA",
-          light: "#FAF3E8",
-          dark: "#EBD5C1",
+          DEFAULT: "#F1F1F1",
+          light: "#F8F8F8",
+          dark: "#EAEAEA",
         },
         ink: {
-          DEFAULT: "#3D2817",
-          light: "#6B4E3D",
+          DEFAULT: "#2C2C2C",
+          light: "#5C5C5C",
+          muted: "#8C8C8C",
         },
       },
     },
