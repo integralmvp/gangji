@@ -3,6 +3,7 @@
 /**
  * CalendarSection Component
  * 3개월 달력을 한 화면에 그리드로 배치 (스크롤 없음)
+ * - aspect-square 제거, 높이 기반 레이아웃
  * Phase A: 구조만 구현 (데이터 연결은 PR5)
  */
 export default function CalendarSection() {
@@ -25,37 +26,37 @@ export default function CalendarSection() {
       {months.map((offset) => (
         <div
           key={offset}
-          className="bg-paper-light/50 rounded-md p-1.5 border border-ink/5 overflow-hidden"
+          className="bg-paper-light/50 rounded-md p-1 border border-ink/5 overflow-hidden min-h-0"
         >
           {/* Month Header */}
           <div className="flex items-center justify-between mb-0.5">
-            <h3 className="text-[11px] font-medium text-ink">
+            <h3 className="text-[10px] font-medium text-ink">
               {getMonthName(offset)}
             </h3>
             {offset === 0 && (
-              <span className="text-[9px] text-ink-muted bg-ink/5 px-1 py-0.5 rounded">
+              <span className="text-[8px] text-ink-muted bg-ink/5 px-1 py-0.5 rounded">
                 현재
               </span>
             )}
           </div>
 
-          {/* Calendar Grid (ultra compact) */}
+          {/* Calendar Grid (height-based, not aspect-ratio) */}
           <div className="grid grid-cols-7 gap-[1px]">
             {/* Day labels */}
             {["일", "월", "화", "수", "목", "금", "토"].map((day) => (
               <div
                 key={day}
-                className="text-center text-[9px] text-ink-muted font-medium py-0.5"
+                className="text-center text-[8px] text-ink-muted font-medium h-3 flex items-center justify-center"
               >
                 {day}
               </div>
             ))}
 
-            {/* Days (placeholder, ultra compact) */}
+            {/* Days (height-based layout) */}
             {generateDays().map((day) => (
               <button
                 key={day}
-                className="aspect-square flex items-center justify-center text-[9px] text-ink hover:bg-paper-dark rounded-sm transition-colors"
+                className="h-4 w-full flex items-center justify-center text-[8px] text-ink hover:bg-paper-dark rounded-sm transition-colors"
               >
                 {day <= 31 ? day : ""}
               </button>
@@ -65,7 +66,7 @@ export default function CalendarSection() {
       ))}
 
       {/* Placeholder hint */}
-      <div className="text-center text-[9px] text-ink-muted py-0.5">
+      <div className="text-center text-[8px] text-ink-muted py-0.5">
         <p>달력 데이터 연결은 PR5에서 구현</p>
       </div>
     </div>
