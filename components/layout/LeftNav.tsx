@@ -27,7 +27,7 @@ export default function LeftNav() {
   return (
     <nav className="h-full bg-paper-light border-r border-ink/10 flex flex-col">
       {/* Logo Slot: Header와 같은 높이 (64px) */}
-      <div className="h-16 flex items-center px-4 border-b border-ink/10">
+      <div className="h-16 flex items-center px-4">
         <div>
           <h2 className="text-lg font-bold text-ink">Gangji</h2>
           <p className="text-xs text-ink-muted">흐름의 OS</p>
