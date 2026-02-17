@@ -4,10 +4,8 @@ import { useUIStore } from "@/store/uiStore";
 
 /**
  * RightToolbar — 우측 도구 패널
- * - 패널 자체: glass blur 투명 배경
- * - 뷰 섹션: 포스트잇 카드, 타이틀 우측 배치 + 파스텔 컬러 탭
- * - 문서 도구: 하나의 긴 포스트잇 카드에 타이틀 + 모든 도구 통합
- * - 타이틀별 서로 다른 파스텔 컬러
+ * - 패널 자체: glass blur 흰색 투명 배경
+ * - 각 섹션 카드: 아이콘+타이틀+내용 전체 배경에 파스텔 컬러 (포스트잇)
  */
 
 const EDITOR_TOOLS = [
@@ -41,14 +39,23 @@ export default function RightToolbar() {
         {rightOpen ? "▸" : "◂"}
       </button>
 
-      {/* 뷰 전환 — 포스트잇 카드, 타이틀 우측 */}
-      <div className="px-2 mb-2">
-        <div className="postit overflow-hidden">
-          {/* 타이틀 — 우측 정렬, 파스텔 컬러 탭 */}
-          <div className="flex justify-end px-2 pt-1.5 pb-1 border-b border-ink/6">
+      {/* 뷰 전환 — 전체 카드 배경에 파스텔 컬러 */}
+      <div className="px-1.5 mb-2">
+        <div
+          className="rounded-sm overflow-hidden"
+          style={{
+            background: COLORS.view.bg,
+            boxShadow: "0 1px 3px rgba(44,44,42,0.10), 0 0.5px 1px rgba(44,44,42,0.06)",
+          }}
+        >
+          {/* 타이틀 */}
+          <div
+            className="flex justify-end px-2 pt-1.5 pb-1 border-b"
+            style={{ borderColor: `${COLORS.view.text}22` }}
+          >
             <span
-              className="text-[9px] font-medium px-1.5 py-0.5 rounded-sm"
-              style={{ background: COLORS.view.bg, color: COLORS.view.text }}
+              className="text-[9px] font-semibold"
+              style={{ color: COLORS.view.text }}
             >
               {rightOpen ? "뷰" : "V"}
             </span>
@@ -57,22 +64,24 @@ export default function RightToolbar() {
           <div className="p-1.5 space-y-1">
             <button
               onClick={() => setViewMode("editor")}
-              className={`w-full px-2 py-1 rounded text-xs transition-colors
-                ${viewMode === "editor"
-                  ? "bg-ink text-paper"
-                  : "text-ink-muted hover:text-ink hover:bg-ink/5"
-                }`}
+              className="w-full px-2 py-1 rounded text-xs transition-all"
+              style={
+                viewMode === "editor"
+                  ? { background: COLORS.view.text, color: COLORS.view.bg }
+                  : { color: COLORS.view.text, opacity: 0.6 }
+              }
               title="백지 보기"
             >
               {rightOpen ? "백지" : "✎"}
             </button>
             <button
               onClick={() => setViewMode("calendar")}
-              className={`w-full px-2 py-1 rounded text-xs transition-colors
-                ${viewMode === "calendar"
-                  ? "bg-ink text-paper"
-                  : "text-ink-muted hover:text-ink hover:bg-ink/5"
-                }`}
+              className="w-full px-2 py-1 rounded text-xs transition-all"
+              style={
+                viewMode === "calendar"
+                  ? { background: COLORS.view.text, color: COLORS.view.bg }
+                  : { color: COLORS.view.text, opacity: 0.6 }
+              }
               title="달력 보기"
             >
               {rightOpen ? "달력" : "▦"}
@@ -81,15 +90,24 @@ export default function RightToolbar() {
         </div>
       </div>
 
-      {/* 문서 도구 — 하나의 긴 포스트잇에 타이틀 + 모든 도구 (에디터 모드에서만) */}
+      {/* 문서 도구 — 전체 카드 배경에 파스텔 컬러 (에디터 모드에서만) */}
       {viewMode === "editor" && (
-        <div className="px-2 mb-2 flex-1 min-h-0">
-          <div className="postit h-full flex flex-col overflow-hidden">
-            {/* 타이틀 — 우측 정렬, 파스텔 컬러 탭 */}
-            <div className="flex justify-end px-2 pt-1.5 pb-1 border-b border-ink/6 shrink-0">
+        <div className="px-1.5 mb-2 flex-1 min-h-0">
+          <div
+            className="rounded-sm h-full flex flex-col overflow-hidden"
+            style={{
+              background: COLORS.tools.bg,
+              boxShadow: "0 1px 3px rgba(44,44,42,0.10), 0 0.5px 1px rgba(44,44,42,0.06)",
+            }}
+          >
+            {/* 타이틀 */}
+            <div
+              className="flex justify-end px-2 pt-1.5 pb-1 border-b shrink-0"
+              style={{ borderColor: `${COLORS.tools.text}22` }}
+            >
               <span
-                className="text-[9px] font-medium px-1.5 py-0.5 rounded-sm"
-                style={{ background: COLORS.tools.bg, color: COLORS.tools.text }}
+                className="text-[9px] font-semibold"
+                style={{ color: COLORS.tools.text }}
               >
                 {rightOpen ? "문서 도구" : "T"}
               </span>
@@ -99,11 +117,12 @@ export default function RightToolbar() {
               {EDITOR_TOOLS.map((tool) => (
                 <button
                   key={tool.id}
-                  className={`w-full rounded text-ink-muted hover:text-ink hover:bg-ink/5 transition-colors
+                  className={`w-full rounded transition-all
                     ${rightOpen
                       ? "flex items-center gap-2 px-2 py-1.5"
                       : "flex justify-center p-2"
                     }`}
+                  style={{ color: COLORS.tools.text, opacity: 0.75 }}
                   title={tool.label}
                 >
                   <span className={`text-xs font-mono ${tool.style}`}>{tool.icon}</span>
@@ -117,19 +136,28 @@ export default function RightToolbar() {
         </div>
       )}
 
-      {/* 몰입기간 자리 (PR6) — 포스트잇 카드, 타이틀 우측 */}
-      <div className="mt-auto px-2 pb-2">
-        <div className="postit overflow-hidden">
-          <div className="flex justify-end px-2 pt-1.5 pb-1 border-b border-ink/6">
+      {/* 몰입기간 자리 (PR6) — 전체 카드 배경에 파스텔 컬러 */}
+      <div className="mt-auto px-1.5 pb-2">
+        <div
+          className="rounded-sm overflow-hidden"
+          style={{
+            background: COLORS.flow.bg,
+            boxShadow: "0 1px 3px rgba(44,44,42,0.10), 0 0.5px 1px rgba(44,44,42,0.06)",
+          }}
+        >
+          <div
+            className="flex justify-end px-2 pt-1.5 pb-1 border-b"
+            style={{ borderColor: `${COLORS.flow.text}22` }}
+          >
             <span
-              className="text-[9px] font-medium px-1.5 py-0.5 rounded-sm"
-              style={{ background: COLORS.flow.bg, color: COLORS.flow.text }}
+              className="text-[9px] font-semibold"
+              style={{ color: COLORS.flow.text }}
             >
               {rightOpen ? "몰입기간" : "F"}
             </span>
           </div>
           <div className="p-2">
-            <div className="text-[9px] text-ink-muted/40 text-center">PR6</div>
+            <div className="text-[9px] text-center" style={{ color: COLORS.flow.text, opacity: 0.3 }}>PR6</div>
           </div>
         </div>
       </div>

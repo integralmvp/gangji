@@ -7,16 +7,16 @@
   --paper: #f1f1ef;
   --paper-light: #f8f8f7;
   --paper-dark: #e8e8e6;
-  --note-bg: #f4f4f2; /* NOTE 중앙 배경 */
-  --app-bg: #e4e4e2; /* 전체 앱 배경 (NOTE보다 어둡게) */
+  --note-bg: #DDDDD9; /* NOTE 중앙 배경 — 연회색 */
+  --app-bg: #CECECB; /* 전체 앱 배경 (NOTE보다 어둡게) */
 
   /* 잉크 계열 */
   --ink: #2c2c2a;
   --ink-light: #5c5c5a;
   --ink-muted: #8c8c8a;
 
-  /* 패널 glass */
-  --glass-bg: rgba(241, 241, 239, 0.55);
+  /* 패널 glass — 흰색 베이스 블러 */
+  --glass-bg: rgba(255, 255, 255, 0.70);
   --glass-border: rgba(44, 44, 42, 0.08);
 }
 

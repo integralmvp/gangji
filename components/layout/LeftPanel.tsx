@@ -4,8 +4,8 @@ import { useUIStore } from "@/store/uiStore";
 
 /**
  * LeftPanel — 좌측 인덱스 패널
- * - 패널 자체: glass blur 투명 배경
- * - 각 nav 아이템: 포스트잇 카드 + 타이틀에 파스텔 컬러 탭
+ * - 패널 자체: glass blur 흰색 투명 배경
+ * - 각 nav 아이템: 아이콘+타이틀 전체 배경에 파스텔 컬러 (포스트잇 탭)
  */
 
 // 아이템별 파스텔 컬러 (흰기 섞인 낮은 채도)
@@ -34,23 +34,25 @@ export default function LeftPanel() {
         {leftOpen ? "◂" : "▸"}
       </button>
 
-      {/* Nav Items — 각 아이템이 포스트잇 카드 + 타이틀 파스텔 컬러 탭 */}
-      <nav className="flex-1 px-2 space-y-1 overflow-y-auto">
+      {/* Nav Items — 아이콘 + 타이틀 전체 배경을 파스텔 컬러로 채운 포스트잇 탭 */}
+      <nav className="flex-1 px-1.5 space-y-1 overflow-y-auto py-1">
         {NAV_ITEMS.map((item) => (
           <button
             key={item.id}
-            className="postit w-full flex items-center gap-2 px-2 py-1.5 hover:opacity-90 transition-opacity"
+            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-sm hover:brightness-95 active:brightness-90 transition-all"
+            style={{
+              background: item.color,
+              color: item.textColor,
+              boxShadow: "0 1px 3px rgba(44,44,42,0.10), 0 0.5px 1px rgba(44,44,42,0.06)",
+              border: `1px solid ${item.color}`,
+            }}
             title={!leftOpen ? item.label : undefined}
           >
-            <span className="text-[11px] font-mono text-ink-muted/50 shrink-0">
+            <span className="text-[11px] font-mono shrink-0 opacity-70">
               {item.icon}
             </span>
             {leftOpen && (
-              /* 타이틀 영역 — 포스트잇 컬러 탭 */
-              <span
-                className="text-xs font-medium px-1.5 py-0.5 rounded-sm leading-tight"
-                style={{ background: item.color, color: item.textColor }}
-              >
+              <span className="text-xs font-medium leading-tight">
                 {item.label}
               </span>
             )}
