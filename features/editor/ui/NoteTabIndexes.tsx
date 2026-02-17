@@ -118,7 +118,7 @@ export default function NoteTabIndexes() {
                     text-xs text-ink/70 hover:bg-ink/5 transition-colors"
                 >
                   <span
-                    className="w-2.5 h-2.5 rounded-sm shrink-0"
+                    className="w-2.5 h-2.5 items-center rounded-sm shrink-0"
                     style={{ backgroundColor: tab.bg, border: `1px solid ${tab.border}` }}
                   />
                   {tab.label}
