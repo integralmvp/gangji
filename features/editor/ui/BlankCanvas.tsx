@@ -26,8 +26,8 @@ export default function BlankCanvas({ pageNumber = 1 }: BlankCanvasProps) {
   return (
     <div className="relative h-full overflow-hidden p-8">
       {/* 날짜 표기 (헤더가 아닌 컨텐츠 일부처럼) */}
-      <div className="mb-6">
-        <div className="text-xs text-ink-muted">
+      <div className="mb-6 inline-block">
+        <div className="text-xs text-ink-muted whitespace-nowrap">
           {new Date().toLocaleDateString("ko-KR", {
             year: "numeric",
             month: "2-digit",
@@ -35,7 +35,8 @@ export default function BlankCanvas({ pageNumber = 1 }: BlankCanvasProps) {
             weekday: "short",
           })}
         </div>
-        <div className="mt-0.5 w-12 border-b border-ink/20" />
+        {/* 보더라인: 부모(inline-block)가 텍스트 너비를 따르므로 w-full = 텍스트 너비 */}
+        <div className="mt-0.5 w-full border-b border-ink/20" />
       </div>
 
       {/* 백지 내용 영역 */}

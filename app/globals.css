@@ -35,3 +35,11 @@ body {
   -webkit-backdrop-filter: blur(12px);
   border: 1px solid var(--glass-border);
 }
+
+/* Postit card utility — 내부 컨텐츠 포스트잇 느낌 */
+.postit {
+  background: rgba(252, 251, 249, 0.92);
+  border: 1px solid rgba(44, 44, 42, 0.07);
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(44, 44, 42, 0.07), 0 0.5px 1px rgba(44, 44, 42, 0.04);
+}
