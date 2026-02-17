@@ -80,7 +80,7 @@ export default function LeftPanel() {
       {/* 하단 브랜드 */}
       {leftOpen && (
         <div className="p-2">
-          <div className="text-[15px] text-ink-muted">Gangji</div>
+          <div className="text-[25px] text-ink-muted">Gangji</div>
         </div>
       )}
     </div>
