@@ -24,7 +24,7 @@ export default function NoteBookmark() {
         disabled:opacity-0
         ${isBookmarked
           ? "text-yellow-400 hover:text-yellow-500"
-          : "text-ink-muted/25 hover:text-ink-muted/50"
+          : "text-ink/55 hover:text-ink/75"
         }`}
     >
       {isBookmarked ? "★" : "☆"}

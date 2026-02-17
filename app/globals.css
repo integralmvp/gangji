@@ -140,48 +140,52 @@ body {
 /* ── 노트 탭 인덱스 스티커 ─────────────────────────────────────── */
 
 /*
- * 정자세 사다리꼴 모양 (노트 우상단 top border에 붙임):
- *   위쪽(top border 접촉면)이 좁고, 아래쪽이 넓어지는 형태.
- *   파일 폴더 탭처럼 위에서 아래로 퍼지는 형태.
- *   노트 상단 테두리에 윗변이 딱 붙음.
+ * 뒤집어진 등변사다리꼴 (노트 우상단 top border에 딱 붙임):
+ *   위쪽(top border 접촉면)이 넓고 → 아래쪽이 좁아지는 형태.
  *
- * clip-path:  좁은 위 → 넓은 아래 (정자세 사다리꼴)
+ * clip-path: polygon(0% 0%, 100% 0%, 85% 100%, 15% 100%)
+ *   → 위 전체 폭, 아래 70% 폭 (등변 사다리꼴)
+ *
+ * 세로 2등분:
+ *   위 50%: 흰 배경 (보더 없음)
+ *   아래 50%: var(--tab-color) 파스텔 컬러 + 텍스트
+ *   → linear-gradient로 구현, clip-path가 전체를 사다리꼴로 자름
  */
 
 .note-tab-sticker {
   position: relative;
   display: inline-flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
-  gap: 0;
 
-  /* 패딩: 위쪽(좁은 부분) 작게, 아래쪽(넓은 부분) 크게 → 텍스트 시각적 중앙 */
-  padding: 6px 22px 14px;
+  width: 80px;
+  height: 40px;
+  padding: 0 6px 9px;
 
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   white-space: nowrap;
   line-height: 1;
 
-  /* 정자세 사다리꼴 — 위쪽이 좁고 아래쪽이 넓어짐 */
-  clip-path: polygon(
-    20% 0%,    /* 좌상단 (좁은 상단) */
-    80% 0%,    /* 우상단 (좁은 상단) */
-    100% 100%, /* 우하단 (전체 너비) */
-    0% 100%    /* 좌하단 (전체 너비) */
+  /* 뒤집어진 등변사다리꼴: 위 전체 너비 → 아래 70% 너비 */
+  clip-path: polygon(0% 0%, 100% 0%, 85% 100%, 15% 100%);
+
+  /* 세로 2등분: 위 흰색 / 아래 파스텔 컬러 */
+  background: linear-gradient(
+    to bottom,
+    #ffffff 50%,
+    var(--tab-color, #FDE68A) 50%
   );
 
-  /* 스티커 느낌: 아래로 살짝 그림자 */
-  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12));
-
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.08));
   cursor: pointer;
   user-select: none;
   transition: filter 0.15s, opacity 0.15s;
 }
 
 .note-tab-sticker:hover {
-  filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.16));
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.12));
   opacity: 0.92;
 }
 
@@ -195,8 +199,8 @@ body {
 /* hover 시 나타나는 × 제거 버튼 */
 .note-tab-sticker-remove {
   display: none;
-  margin-left: 4px;
-  font-size: 9px;
+  margin-left: 3px;
+  font-size: 8px;
   opacity: 0.6;
   position: relative;
   z-index: 1;
@@ -208,36 +212,19 @@ body {
   display: inline-block;
 }
 
-/* 탭 추가 버튼 스타일 */
+/* 탭 추가 버튼 — 아래 반절 블랙 */
 .note-tab-sticker--add {
-  background-color: transparent !important;
-  border: none !important;
-  clip-path: polygon(
-    20% 0%,
-    80% 0%,
-    100% 100%,
-    0% 100%
-  );
-  padding: 6px 18px 14px;
-  color: rgba(44, 44, 42, 0.40) !important;
-  filter: none;
-}
-.note-tab-sticker--add::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border: 1.5px dashed rgba(44, 44, 42, 0.22);
-  clip-path: polygon(
-    20% 0%,
-    80% 0%,
-    100% 100%,
-    0% 100%
-  );
+  background: linear-gradient(
+    to bottom,
+    #ffffff 50%,
+    #1a1a18 50%
+  ) !important;
+  color: #ffffff !important;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.08)) !important;
 }
 .note-tab-sticker--add:hover {
-  color: rgba(44, 44, 42, 0.65) !important;
-  filter: none;
-  opacity: 1;
+  opacity: 0.88 !important;
+  filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.12)) !important;
 }
 .note-tab-sticker--add .note-tab-sticker-remove {
   display: none !important;
