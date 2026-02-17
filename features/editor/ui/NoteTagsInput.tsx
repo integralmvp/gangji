@@ -59,7 +59,7 @@ export default function NoteTagsInput() {
             e.stopPropagation();
             removeTag(tag);
           }}
-          className="text-xs text-ink-muted/55 hover:text-ink-muted/80
+          className="text-xs text-ink-muted/70 hover:text-ink-muted/90
             cursor-pointer transition-colors select-none"
           title="클릭하여 제거"
         >
@@ -78,7 +78,7 @@ export default function NoteTagsInput() {
           onBlur={commitTag}
           placeholder={tags.length === 0 ? "#태그 추가" : ""}
           className="flex-1 min-w-[56px] bg-transparent border-none outline-none
-            text-xs text-ink-muted/55 placeholder:text-ink-muted/25
+            text-xs text-ink-muted/70 placeholder:text-ink-muted/50
             caret-ink"
         />
       )}

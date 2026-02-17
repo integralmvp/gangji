@@ -58,7 +58,7 @@ body {
 .gangji-editor .tiptap p.is-editor-empty:first-child::before {
   content: attr(data-placeholder);
   float: left;
-  color: rgba(140, 140, 138, 0.35);
+  color: rgba(140, 140, 138, 0.60);
   pointer-events: none;
   height: 0;
 }
@@ -160,7 +160,8 @@ body {
 
   width: 80px;
   height: 40px;
-  padding: 0 6px 9px;
+  /* 아래 50%(20px) 컬러 영역 내 텍스트 수직 중앙: (20 - ~10px font) / 2 ≈ 5px */
+  padding: 0 6px 5px;
 
   font-size: 10.5px;
   font-weight: 600;
