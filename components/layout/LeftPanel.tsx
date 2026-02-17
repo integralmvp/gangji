@@ -46,23 +46,32 @@ export default function LeftPanel() {
             }}
             title={!leftOpen ? item.label : undefined}
           >
-            {/* 좌측: 파스텔 컬러 영역 (아이콘 + 타이틀) */}
-            <span
-              className="flex items-center gap-2 px-2 py-1.5 shrink-0"
-              style={{ background: item.color }}
-            >
-              <span className="text-[11px] font-mono text-ink/60 shrink-0">
-                {item.icon}
-              </span>
-              {leftOpen && (
-                <span className="text-xs font-medium text-ink leading-tight">
-                  {item.label}
+            {leftOpen ? (
+              /* 펼침 상태: 좌측 절반 컬러 + 우측 절반 화이트 */
+              <>
+                <span
+                  className="flex items-center gap-2 px-2 py-1.5 w-1/2"
+                  style={{ background: item.color }}
+                >
+                  <span className="text-[11px] font-mono text-ink/60 shrink-0">
+                    {item.icon}
+                  </span>
+                  <span className="text-xs font-medium text-ink leading-tight truncate">
+                    {item.label}
+                  </span>
                 </span>
-              )}
-            </span>
-            {/* 우측: 화이트 영역 */}
-            {leftOpen && (
-              <span className="flex-1 bg-white" />
+                <span className="w-1/2 bg-white" />
+              </>
+            ) : (
+              /* 접힘 상태: 전체 컬러 (아이콘만) */
+              <span
+                className="flex items-center justify-center w-full py-1.5"
+                style={{ background: item.color }}
+              >
+                <span className="text-[11px] font-mono text-ink/60">
+                  {item.icon}
+                </span>
+              </span>
             )}
           </button>
         ))}
