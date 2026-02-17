@@ -56,28 +56,24 @@
 
 ## 4) UI/UX 기준(구체 설계)
 
-### 4.1 전체 레이아웃(고정)
-- **Landing(메인)**: 중앙 **약 80%** 영역에 3개월 달력
-- **LeftNav**: 좌측 세로 네비게이션(탭/포스트잇 느낌)
-- **TopBar**: 상단에 날짜 + 뷰 전환(달력↔백지)
-- **Bottom**: 하단 몰입기간(Flow) 관리 섹션
+### 4.1 전체 레이아웃(고정) — 3열 구조
+- **LeftPanel(≈10%)**: 탐색/관리 (glass blur, NOTE보다 시각적으로 약하게)
+- **NOTE(≈80%)**: 컨텐츠 전용 (Calendar 또는 Editor)
+- **RightToolbar(≈10%)**: 실행/도구 (glass blur, NOTE보다 시각적으로 약하게)
 
 ```
-
-┌───────────────────────────────────────────────────────────┐
-│ TopBar: 날짜 / [달력]↔[백지] 전환 / (선택: 현재 테마)      │
-├───────────────┬───────────────────────────────────────────┤
-│ LeftNav        │ Main(≈80%)                                │
-│ - Recent       │ ① Calendar View (3개월)                   │
-│ - Tabs         │ ② Blank Editor (백지)                     │
-│ - Tags(보관소) │                                           │
-│ - Bookmarks    │                                           │
-│ - Search       │                                           │
-├───────────────┴───────────────────────────────────────────┤
-│ Bottom Flow Section: 몰입기간(테마/주간 RUN-STAND-SIT)      │
-└───────────────────────────────────────────────────────────┘
-
+┌────────────┬──────────────────────────────────┬────────────┐
+│ LeftPanel  │         NOTE (≈80%)              │ RightBar   │
+│  (≈10%)    │  CalendarCanvas / BlankCanvas    │  (≈10%)    │
+│  (glass)   │  - 헤더/푸터/섹션 완전 없음         │  (glass)   │
+│  탐색/관리  │  - 컨텐츠만, 100vh 고정             │  실행/도구  │
+└────────────┴──────────────────────────────────┴────────────┘
 ```
+
+**NOTE 내부 규칙 (절대 고정)**
+- 헤더/푸터/섹션 UI 금지 — 오직 컨텐츠만 렌더링
+- 뷰 전환 UI 금지 — RightToolbar에서만 전환
+- 기능 버튼 금지 — 좌/우 패널로 완전 분리
 
 ---
 
@@ -103,7 +99,7 @@
 
 ### 4.3 Blank Editor(백지) — “즉시 쓰기”
 **진입**
-- TopBar의 **[백지 펼치기]** 또는 날짜 클릭으로 진입
+- RightToolbar의 **[백지]** 버튼 또는 달력 날짜 클릭으로 진입
 - **중간 단계/모달/폼 금지**
 - 열리자마자 **커서 자동 포커스**, 1초 내 타이핑 가능
 
@@ -130,33 +126,38 @@
 
 ---
 
-### 4.4 LeftNav(페이지 관리) — “정리는 나중”
+### 4.4 LeftPanel(탐색/관리) — "정리는 나중"
 초기 MVP에서는 UI 뼈대 + 핵심만 우선 구현한다.
 - Recent(최근 기록 묶음/페이지)
 - Tabs(탭 트리) : 한 페이지 당 하나 이상의 탭 설정 가능 / 플랫폼 기본 고정 탭 몰입탭(stand/run/sit 세개의 하위 탭)
 - Tags(보관소: 태그 클라우드/목록)
 - Bookmarks(북마크 목록)
 - Search(단순 검색 → 고도화는 Phase B)
-- 페이지 쪽수 관리
+
+**디자인**
+- glass blur 반투명 스타일 (NOTE보다 시각적으로 약하게)
+- 포스트잇 탭 스타일: 아이콘+타이틀 좌측 절반 파스텔 컬러, 우측 화이트
 
 ---
 
-### 4.5 Bottom Flow Section(몰입기간 관리) — “제어 레이어”
-**기능**
+### 4.5 RightToolbar(실행/도구) — "기능의 중심"
+뷰 전환, 에디터 도구, 몰입기간 관리를 모두 담당하는 우측 패널.
+
+**섹션 구성 (위→아래)**
+1) **뷰 전환** — `calendar ↔ editor` 전환 버튼
+2) **문서 도구** — Bold/Italic/Underline, Heading, List, Highlight (에디터 모드에서만)
+3) **몰입기간(Flow)** — Sprint/Period 관리 (PR6에서 구현)
+
+**몰입기간 상세 기능** (PR6)
 - 사용자가 직접 몰입 테마/기간 설정
-- 사용자가 지정한 날짜, 기간으로 RUN/STAND/SIT 설정
-- 각 RUN/STAND/SIT 에 목표 1줄 설정
-- 호버/클릭 시 주간 설명/목표 노출
+- RUN/STAND/SIT 기간 설정 + 목표 1줄
+- Flow Strip: `[ STAND ][ RUN ][ RUN ][ SIT ]`
+  - hover: 기간 정보(기간/목표)
+  - click: 기간 편집
 
-**UI 구성**
-1) **Current Flow Card**
-- theme / 기간 / 현재 기간 타입 / 목표(1줄)
-- 수정 / 종료 / 새 몰입
-
-2) **Flow Strip**
-- 예: `[ STAND ][ RUN ][ RUN ][ SIT ]`
-- hover: 기간 정보(기간/목표)
-- click: 기간 편집(타입 3개 + 목표 1줄)
+**디자인**
+- glass blur 반투명 스타일 (NOTE보다 시각적으로 약하게)
+- 섹션 카드: 헤더만 파스텔 컬러, 콘텐츠 영역 화이트
 
 ---
 
@@ -221,12 +222,17 @@
 ---
 
 ## 8) 데이터 모델(기준)
-- Page: 날짜 기반 기록 단위(내부 단위)
-- Bundle: 이어쓰기/연속 기록의 관리 단위(**UI 기준 단위**)
-- Sprint: 몰입 테마/기간 배열
-- Period: run/stand/sit + 목표(1줄) + startDate
+- **Page**: 날짜 기반 기록 단위(내부 단위) — `pageNumber` 포함
+- **Bundle**: 이어쓰기/연속 기록의 관리 단위(**UI 기준 단위**)
+- **Sprint**: 몰입 테마/기간 배열
+- **Period**: run/stand/sit + 목표(1줄) + startDate
 
-> Page는 “낱장”, Bundle은 “묶음(실사용 단위)”.
+> Page는 "낱장", Bundle은 "묶음(실사용 단위)".
+
+**pageNumber 규칙**
+- 생성 시: `pageNumber = max(기존 pageNumber) + 1` (단조 증가)
+- UI 표시: NOTE 하단 중앙에 `— 1 —` 형태 (매우 작고 흐리게, 보조 정보)
+- 기존 데이터: createdAt 오름차순 정렬 후 순차 부여 (Dexie v2 migration 완료)
 
 ---
 
@@ -282,9 +288,13 @@
 - Dexie schema + versioning/migration scaffold
 - 기본 CRUD + 날짜 기반 로드 지원
 
-### PR3 — Layout(그릇) + 뷰 전환
-- TopBar(날짜/토글) + LeftNav(뼈대) + Main(달력/백지) + Bottom(Flow)
-- 달력↔백지 토글 즉시 동작
+### PR3 — Layout(그릇) + 뷰 전환 ✅
+- 3열 고정 레이아웃: LeftPanel + NOTE(≈80%) + RightToolbar
+- NOTE 내부: 헤더/푸터/섹션 완전 제거, 컨텐츠만 렌더링
+- RightToolbar에서 달력↔백지 전환
+- CalendarCanvas: 좌측 소형 3개월 + 우측 대형 현재월
+- BlankCanvas: 커서 자동 포커스 + 하단 쪽수 표시
+- pageNumber 필드 추가 (Dexie v2 migration 포함)
 
 ### PR4 — Blank Editor(핵심) + Auto-save/Restore
 - “열자마자 쓰기” 구현(autofocus)
@@ -541,7 +551,17 @@
 - StorageAdapter 인터페이스 구현 (`lib/storage/adapter.ts`)
 - Dexie schema v1 구현 (`lib/storage/db.ts`)
 - IndexedDBAdapter 구현 완료 (`lib/storage/indexedDBAdapter.ts`)
+- Storage Facade 싱글톤: `lib/storage/storage.ts`
 - 스모크 테스트 페이지: `/dev-storage`
+
+**✅ PR3 — Layout + 뷰 전환 (완료: 2026-02-17)**
+- 3열 고정 레이아웃 구현 (LeftPanel + NOTE + RightToolbar)
+- NOTE 내부 완전 분리: 컨텐츠만, 헤더/푸터/섹션 없음
+- RightToolbar: 뷰 전환(calendar↔editor) + 에디터 도구 뼈대 + 몰입기간 placeholder
+- CalendarCanvas: 좌측 소형 3개월 + 우측 대형 현재월
+- BlankCanvas: 커서 자동 포커스 + 하단 쪽수 표시 (`— n —`)
+- Zustand uiStore: viewMode / leftOpen / rightOpen 상태
+- Dexie schema v2: pageNumber 인덱스 추가 + migration 완료
 
 ---
 
@@ -551,19 +571,29 @@
 /home/user/gangji/
 ├── app/
 │   ├── layout.tsx
-│   ├── page.tsx                    # 메인 페이지 (임시)
+│   ├── page.tsx                    # 메인 페이지 (3열 레이아웃 조립)
 │   └── dev-storage/
-│       └── page.tsx                # 스모크 테스트 페이지
+│       └── page.tsx                # Storage 스모크 테스트 페이지
 ├── components/
-│   └── common/                     # 공용 컴포넌트 (준비됨)
-├── features/                       # 기능 단위 폴더 (준비됨)
+│   ├── common/                     # 공용 컴포넌트 (준비됨)
+│   └── layout/
+│       ├── LeftPanel.tsx           # 좌측 탐색/관리 패널 (glass, 포스트잇 탭)
+│       └── RightToolbar.tsx        # 우측 실행/도구 패널 (glass, 섹션 카드)
+├── features/
+│   ├── calendar/
+│   │   └── ui/
+│   │       └── CalendarCanvas.tsx  # 달력 컨텐츠 (소형 3개월 + 대형 현재월)
+│   └── editor/
+│       └── ui/
+│           └── BlankCanvas.tsx     # 백지 컨텐츠 (autofocus + 쪽수)
 ├── lib/
-│   ├── storage/
-│   │   ├── adapter.ts             # StorageAdapter 인터페이스
-│   │   ├── db.ts                  # Dexie schema v1
-│   │   └── indexedDBAdapter.ts    # Dexie 기반 구현체
-│   └── utils/                      # 전역 유틸 (준비됨)
-├── store/                          # Zustand 스토어 (준비됨)
+│   └── storage/
+│       ├── adapter.ts              # StorageAdapter 인터페이스
+│       ├── db.ts                   # Dexie schema v2 (pageNumber migration 포함)
+│       ├── indexedDBAdapter.ts     # Dexie 구현체
+│       └── storage.ts              # Storage Facade 싱글톤
+├── store/
+│   └── uiStore.ts                  # UI 상태 (viewMode, leftOpen, rightOpen)
 └── types/
     └── models.ts                   # Page, Bundle, Sprint, Period 타입
 ```
@@ -572,22 +602,21 @@
 
 ### 16.3 Storage 계층 구현 상태
 
-**Dexie Schema (v1)**
-- `pages`: id, date, content, title, tabs, tags, bookmark, bundleId, createdAt, updatedAt
-- `bundles`: id, firstPageDate, lastPageDate, pageIds, createdAt, updatedAt
+**Dexie Schema (v2 현재)**
+- `pages`: id, date, **pageNumber**, content, title, tabs, tags, bookmarked, bundleId, createdAt, updatedAt
+- `bundles`: id, title, pageIds, startDate, endDate, createdAt, updatedAt
 - `sprints`: id, theme, startDate, endDate, periods, createdAt, updatedAt
-- `settings`: key, value
 
-**인덱스**
-- pages: date, bundleId, tabs (multi-entry), tags (multi-entry), bookmark, createdAt
-- bundles: firstPageDate, lastPageDate, createdAt
-- sprints: startDate, endDate, createdAt
+**인덱스 (v2)**
+- pages: date, pageNumber, bundleId, bookmarked, updatedAt, *tabs, *tags
+- bundles: startDate, endDate, updatedAt
+- sprints: startDate, endDate, updatedAt
 
 **구현된 메서드 (indexedDBAdapter.ts)**
 - Page CRUD: createPage, getPageByDate, updatePage, deletePage
 - Bundle CRUD: createBundle, getBundleById, updateBundle, deleteBundle
 - Sprint CRUD: createSprint, getActiveSprint, updateSprint, deleteSprint
-- Query 메서드: getPagesByDateRange, getBundlesByDateRange, getPagesByTabs, getPagesByTags, getBookmarkedPages
+- Query: getPagesByDateRange, getBundlesByDateRange, getPagesByTabs, getPagesByTags, getBookmarkedPages
 
 ---
 
@@ -604,12 +633,14 @@ pnpm dev
 - 모든 Storage 작업(CRUD + Query) 검증 가능
 
 **데이터 구조 중요 사항**
-- content는 `JSONContent` 타입 (TipTap JSON 형식)
-- tabs는 array (multi-entry 인덱스)
-- tags는 array (multi-entry 인덱스)
-- bundleId는 nullable (단독 페이지 허용)
+- content는 `string` (TipTap JSON을 stringify한 값)
+- pageNumber: 생성 시 max+1 단조 증가, UI에서 `— n —` 형태 표시
+- tabs/tags: string[] (multi-entry 인덱스)
+- bundleId: nullable (단독 페이지 허용)
+- bookmarked: boolean (필드명 주의 — `bookmark`가 아닌 `bookmarked`)
 
-**다음 작업(PR3)**
-- Layout 구현 (TopBar, LeftNav, Main, Bottom)
-- 달력 ↔ 백지 뷰 전환
-- Zustand store 초기 구조 (뷰 상태 관리)
+**다음 작업(PR4)**
+- TipTap 에디터 연결 (BlankCanvas에 실제 에디터 적용)
+- 500ms debounce 자동 저장
+- 오늘 날짜 페이지 자동 생성/로드
+- pageNumber 자동 부여 로직
