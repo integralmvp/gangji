@@ -4,11 +4,8 @@ import { useUIStore } from "@/store/uiStore";
 
 /**
  * LeftPanel — 좌측 인덱스 패널
- * 탐색/정리: Recent / 몰입탭 / Tags / Bookmarks / Search
- *
- * - glass blur 반투명 (존재감 최소, 중앙 NOTE가 주인공)
- * - 접힘: 아이콘만 표시
- * - 모바일: overlay drawer (추후 PR)
+ * - 패널 자체: glass blur 투명 배경
+ * - 각 nav 아이템: 포스트잇 카드 스타일
  */
 export default function LeftPanel() {
   const { leftOpen, toggleLeft } = useUIStore();
@@ -25,10 +22,7 @@ export default function LeftPanel() {
   ];
 
   return (
-    <div
-      className={`h-full glass transition-all duration-200 flex flex-col
-        ${leftOpen ? "w-full" : "w-full items-center"}`}
-    >
+    <div className={`h-full glass transition-all duration-200 flex flex-col`}>
       {/* 토글 버튼 */}
       <button
         onClick={toggleLeft}
@@ -38,13 +32,13 @@ export default function LeftPanel() {
         {leftOpen ? "◂" : "▸"}
       </button>
 
-      {/* Nav Items */}
-      <nav className="flex-1 px-2 space-y-0.5 overflow-y-auto">
+      {/* Nav Items — 각 아이템이 포스트잇 카드 */}
+      <nav className="flex-1 px-2 space-y-1 overflow-y-auto">
         {navItems.map((item) => (
           <button
             key={item.id}
-            className={`w-full flex items-center gap-2 px-2 py-1.5 rounded text-left
-              text-ink-muted hover:text-ink hover:bg-ink/5 transition-colors
+            className={`postit w-full flex items-center gap-2 px-2 py-2
+              text-ink-muted hover:text-ink transition-colors
               ${leftOpen ? "" : "justify-center"}`}
             title={!leftOpen ? item.label : undefined}
           >
@@ -56,10 +50,12 @@ export default function LeftPanel() {
         ))}
       </nav>
 
-      {/* 하단: 설정/정보 */}
+      {/* 하단 브랜드 — 포스트잇 카드 */}
       {leftOpen && (
-        <div className="p-2 border-t border-ink/8">
-          <div className="text-[9px] text-ink-muted text-center">Gangji</div>
+        <div className="p-2">
+          <div className="postit px-2 py-1.5 text-center">
+            <div className="text-[9px] text-ink-muted">Gangji</div>
+          </div>
         </div>
       )}
     </div>
