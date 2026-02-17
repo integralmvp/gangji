@@ -137,6 +137,14 @@ export class IndexedDBAdapter implements StorageAdapter {
     await db.sprints.delete(id);
   }
 
+  // ============ PageNumber 관련 ============
+
+  async getNextPageNumber(): Promise<number> {
+    const pages = await db.pages.orderBy("pageNumber").reverse().limit(1).toArray();
+    const max = pages[0]?.pageNumber ?? 0;
+    return max + 1;
+  }
+
   // ============ Query 관련 ============
 
   async getPagesByTag(tag: string): Promise<Page[]> {

@@ -82,6 +82,12 @@ export interface StorageAdapter {
    */
   deleteSprint(id: string): Promise<void>;
 
+  // ============ PageNumber 관련 ============
+  /**
+   * 다음 pageNumber 반환 (현재 최댓값 + 1)
+   */
+  getNextPageNumber(): Promise<number>;
+
   // ============ Query 관련 ============
   /**
    * 태그로 Page 목록 조회

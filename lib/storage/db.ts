@@ -38,18 +38,27 @@ export class GangjiDB extends Dexie {
       sprints: "id, startDate, endDate, updatedAt",
     });
 
-    // ============ Future Versions (Migration Scaffold) ============
-    // 스키마 변경이 필요할 때 아래와 같이 새 버전 추가
-
-    // Example:
-    // this.version(2).stores({
-    //   pages: "id, date, bundleId, bookmarked, updatedAt, *tabs, *tags, newField",
-    // }).upgrade(tx => {
-    //   // Migration 로직
-    //   return tx.table("pages").toCollection().modify(page => {
-    //     page.newField = "default value";
-    //   });
-    // });
+    // ============ Version 2 — pageNumber 추가 ============
+    this.version(2)
+      .stores({
+        // pageNumber 인덱스 추가
+        pages: "id, date, pageNumber, bundleId, bookmarked, updatedAt, *tabs, *tags",
+        bundles: "id, startDate, endDate, updatedAt",
+        sprints: "id, startDate, endDate, updatedAt",
+      })
+      .upgrade(async (tx) => {
+        // 기존 데이터에 pageNumber 부여: createdAt 오름차순 정렬 후 1부터 부여
+        const pages = await tx
+          .table("pages")
+          .orderBy("createdAt")
+          .toArray();
+        let counter = 1;
+        for (const page of pages) {
+          if (page.pageNumber == null) {
+            await tx.table("pages").update(page.id, { pageNumber: counter++ });
+          }
+        }
+      });
   }
 }
 
