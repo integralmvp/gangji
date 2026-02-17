@@ -25,6 +25,7 @@ export default function DevStoragePage() {
       const page: Page = {
         id: nanoid(),
         date: "2026-02-16",
+        pageNumber: 1,
         content: JSON.stringify({ type: "doc", content: [{ type: "paragraph", content: [{ type: "text", text: "테스트 페이지입니다." }] }] }),
         title: "테스트 페이지",
         tabs: ["run", "dev"],

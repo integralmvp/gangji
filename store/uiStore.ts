@@ -2,33 +2,31 @@ import { create } from "zustand";
 
 /**
  * View mode: 'calendar' or 'editor'
- * - calendar: 3-month calendar view showing flow traces
- * - editor: blank editor view for immediate writing
+ * - calendar: 달력 보기 (흐름 지도)
+ * - editor: 백지 보기 (즉시 쓰기)
  */
 export type ViewMode = "calendar" | "editor";
 
 interface UIState {
-  // View state
   viewMode: ViewMode;
-  isLeftNavOpen: boolean;
+  leftOpen: boolean;
+  rightOpen: boolean;
 
-  // Actions
   setViewMode: (mode: ViewMode) => void;
   toggleViewMode: () => void;
-  toggleLeftNav: () => void;
+  toggleLeft: () => void;
+  toggleRight: () => void;
 }
 
 /**
- * UI Store
- *
- * Manages UI-only state (no business logic)
- * - View switching (calendar ↔ editor)
- * - LeftNav open/close state
+ * UI Store — UI 상태만 담당 (비즈니스 로직 없음)
+ * - 뷰 전환 (calendar ↔ editor)
+ * - 좌/우 패널 열림/닫힘
  */
 export const useUIStore = create<UIState>((set) => ({
-  // Default to 'editor' for immediate writing experience
-  viewMode: "editor",
-  isLeftNavOpen: true,
+  viewMode: "editor", // 기본값: 즉시 쓰기
+  leftOpen: true,
+  rightOpen: true,
 
   setViewMode: (mode) => set({ viewMode: mode }),
 
@@ -37,5 +35,6 @@ export const useUIStore = create<UIState>((set) => ({
       viewMode: state.viewMode === "calendar" ? "editor" : "calendar",
     })),
 
-  toggleLeftNav: () => set((state) => ({ isLeftNavOpen: !state.isLeftNavOpen })),
+  toggleLeft: () => set((state) => ({ leftOpen: !state.leftOpen })),
+  toggleRight: () => set((state) => ({ rightOpen: !state.rightOpen })),
 }));

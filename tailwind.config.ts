@@ -9,16 +9,18 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Gangji 감성: 연한 그레이 종이톤 (노트 느낌)
+        // Gangji 갱지 연그레이 종이톤
         paper: {
-          DEFAULT: "#F1F1F1",
-          light: "#F8F8F8",
-          dark: "#EAEAEA",
+          DEFAULT: "#F1F1EF",
+          light: "#F8F8F7",
+          dark: "#E8E8E6",
         },
+        note: "#F4F4F2",   // NOTE 중앙 배경
+        app: "#E4E4E2",    // 전체 앱 배경
         ink: {
-          DEFAULT: "#2C2C2C",
-          light: "#5C5C5C",
-          muted: "#8C8C8C",
+          DEFAULT: "#2C2C2A",
+          light: "#5C5C5A",
+          muted: "#8C8C8A",
         },
       },
     },

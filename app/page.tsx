@@ -1,47 +1,49 @@
 "use client";
 
 import { useUIStore } from "@/store/uiStore";
-import LeftNav from "@/components/layout/LeftNav";
-import NoteLayout from "@/components/layout/NoteLayout";
-import Header from "@/components/layout/Header";
-import FlowSection from "@/components/layout/FlowSection";
-import CalendarSection from "@/components/layout/CalendarSection";
-import BlankEditor from "@/components/editor/BlankEditor";
+import LeftPanel from "@/components/layout/LeftPanel";
+import RightToolbar from "@/components/layout/RightToolbar";
+import CalendarCanvas from "@/features/calendar/ui/CalendarCanvas";
+import BlankCanvas from "@/features/editor/ui/BlankCanvas";
 
 /**
- * Main Page - Gangji Layout (1-screen fixed, no scroll)
+ * Main Page — 인쇄소 노트 레이아웃
  *
- * Layout structure: "노트 한 장 + 포스트잇 인덱스"
- * ┌────────────┬────────────────────────────┐
- * │ LogoSlot   │ NoteHeader                 │ <- 같은 높이
- * ├────────────┼────────────────────────────┤
- * │            │                            │
- * │ IndexTabs  │ Calendar/Editor (1fr)      │
- * │ (포스트잇)  │                            │
- * │            ├────────────────────────────┤
- * │            │ Memo (editor 시 숨김)       │
- * └────────────┴────────────────────────────┘
+ * ┌──────────┬──────────────────────────────┬──────────┐
+ * │ LeftPanel │         NOTE (center)        │ RightBar │
+ * │  ~10%    │           ~80%               │  ~10%    │
+ * │  (glass) │  CalendarCanvas / BlankCanvas │  (glass) │
+ * └──────────┴──────────────────────────────┴──────────┘
  *
- * - 전체 100vh, overflow hidden (스크롤 없는 고정 화면)
- * - 좌측 20%: 포스트잇 인덱스 탭
- * - 우측 80%: 노트 한 장
+ * - 100vh 고정, 스크롤 없음
+ * - 좌/우 패널은 접힘/열림 (glass blur)
+ * - 중앙 NOTE: 헤더/푸터 없음, 콘텐츠만
  */
 export default function Home() {
-  const { viewMode } = useUIStore();
+  const { viewMode, leftOpen, rightOpen } = useUIStore();
+
+  const leftWidth = leftOpen ? "160px" : "48px";
+  const rightWidth = rightOpen ? "160px" : "48px";
 
   return (
-    <div className="h-screen overflow-hidden grid grid-cols-[20%_80%]">
-      {/* LeftNav: 포스트잇 인덱스 */}
-      <LeftNav />
+    <div
+      className="h-screen overflow-hidden bg-app grid"
+      style={{ gridTemplateColumns: `${leftWidth} 1fr ${rightWidth}` }}
+    >
+      {/* 좌측 인덱스 패널 */}
+      <LeftPanel />
 
-      {/* NoteLayout: 노트 한 장 */}
-      <NoteLayout
-        header={<Header />}
-        main={
-          viewMode === "calendar" ? <CalendarSection /> : <BlankEditor />
-        }
-        flow={viewMode === "calendar" ? <FlowSection /> : null}
-      />
+      {/* 중앙 NOTE 영역 */}
+      <main className="h-full overflow-hidden bg-note">
+        {viewMode === "calendar" ? (
+          <CalendarCanvas />
+        ) : (
+          <BlankCanvas />
+        )}
+      </main>
+
+      {/* 우측 도구 패널 */}
+      <RightToolbar />
     </div>
   );
 }

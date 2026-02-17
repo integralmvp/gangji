@@ -35,6 +35,7 @@ export interface Sprint {
 export interface Page {
   id: string;
   date: string; // YYYY-MM-DD
+  pageNumber: number; // 사용자 기준 고유 쪽수 (1, 2, 3… 단조 증가)
   content: string; // TipTap JSON (string으로 저장)
   title?: string; // 무제 허용
   tabs: string[]; // 복수 선택 가능
