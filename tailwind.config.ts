@@ -15,8 +15,8 @@ const config: Config = {
           light: "#F8F8F7",
           dark: "#E8E8E6",
         },
-        note: "#F4F4F2",   // NOTE 중앙 배경
-        app: "#E4E4E2",    // 전체 앱 배경
+        note: "#DDDDD9",   // NOTE 중앙 배경 — 연회색
+        app: "#CECECB",    // 전체 앱 배경
         ink: {
           DEFAULT: "#2C2C2A",
           light: "#5C5C5A",
