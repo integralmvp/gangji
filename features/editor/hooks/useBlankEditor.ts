@@ -7,6 +7,7 @@
  * - 오늘 날짜 페이지 자동 로드/생성
  * - 500ms debounce 자동 저장
  * - 에디터 인스턴스를 editorStore에 등록 (RightToolbar 연결용)
+ * - auto-focus 제거: 포커스는 BlankCanvas가 직접 제어 (title → editor 순)
  */
 
 import { useCallback, useEffect, useRef, useState } from "react";
@@ -70,12 +71,17 @@ export function useBlankEditor(date?: string) {
       }),
     ],
     content: "",
-    autofocus: "end",
+    autofocus: false, // BlankCanvas가 title → editor 순서로 포커스 제어
     immediatelyRender: false,
     onUpdate: ({ editor }) => {
       scheduleSave(editor);
     },
   });
+
+  // 에디터 포커스 함수 (BlankCanvas에서 title Enter 후 호출)
+  const focusEditor = useCallback(() => {
+    editor?.commands.focus("start");
+  }, [editor]);
 
   // 페이지 로드 (오늘 또는 특정 날짜)
   useEffect(() => {
@@ -98,8 +104,8 @@ export function useBlankEditor(date?: string) {
         editor.commands.setContent("");
       }
 
-      editor.commands.focus("end");
       setIsLoading(false);
+      // 포커스는 BlankCanvas의 onLoadComplete 콜백에서 처리
     });
   }, [editor, date, setCurrentPage]);
 
@@ -124,5 +130,5 @@ export function useBlankEditor(date?: string) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  return { editor, isLoading };
+  return { editor, isLoading, focusEditor };
 }

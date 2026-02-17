@@ -129,3 +129,119 @@ body {
 .gangji-editor .tiptap ::selection {
   background-color: rgba(44, 44, 42, 0.12);
 }
+
+/* TipTap 에디터 높이 고정 (스크롤 없음) */
+.gangji-editor,
+.gangji-editor > div {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* ── 노트 탭 인덱스 스티커 ─────────────────────────────────────── */
+
+/*
+ * 뒤집어진 사다리꼴 모양:
+ *   위쪽(페이지 상단)이 더 넓고, 아래쪽이 약간 좁아지는 형태.
+ *   노트에 꽂혀있는 인덱스 스티커처럼 보임.
+ *
+ * clip-path: 위 끝은 완전히 사각, 아래로 갈수록 살짝 안쪽으로 들어옴
+ *            → 아래쪽이 "페이지 테두리에 걸쳐있는" 느낌
+ */
+
+.note-tab-sticker {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+
+  /* 패딩: 상단(노출 부분) 더 크게, 하단은 구분선에 닿도록 작게 */
+  padding: 5px 12px 4px;
+
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  line-height: 1;
+
+  /* 모양: 뒤집어진 사다리꼴 — 위쪽이 넓고 아래쪽이 좁아짐 */
+  clip-path: polygon(
+    0% 0%,            /* 좌상단 */
+    100% 0%,          /* 우상단 */
+    96% 100%,         /* 우하단 (살짝 안쪽) */
+    4% 100%           /* 좌하단 (살짝 안쪽) */
+  );
+
+  /* 스티커 느낌: 살짝 올라온 그림자 */
+  filter: drop-shadow(0 -1px 2px rgba(0, 0, 0, 0.10));
+
+  cursor: pointer;
+  user-select: none;
+  transition: filter 0.15s, opacity 0.15s;
+
+  /* 구분선에 자연스럽게 닿도록 약간 아래로 */
+  transform: translateY(1px);
+}
+
+.note-tab-sticker:hover {
+  filter: drop-shadow(0 -2px 4px rgba(0, 0, 0, 0.14));
+  opacity: 0.92;
+}
+
+/* 탭 텍스트 레이블 */
+.note-tab-sticker-label {
+  display: inline-block;
+  position: relative;
+  z-index: 1;
+}
+
+/* hover 시 나타나는 × 제거 버튼 */
+.note-tab-sticker-remove {
+  display: none;
+  margin-left: 3px;
+  font-size: 8px;
+  opacity: 0.6;
+  position: relative;
+  z-index: 1;
+}
+.note-tab-sticker:hover .note-tab-sticker-label {
+  opacity: 0.7;
+}
+.note-tab-sticker:hover .note-tab-sticker-remove {
+  display: inline-block;
+}
+
+/* + 추가 버튼 스타일 */
+.note-tab-sticker--add {
+  background-color: transparent !important;
+  border: none !important;
+  clip-path: polygon(
+    0% 0%,
+    100% 0%,
+    96% 100%,
+    4% 100%
+  );
+  padding: 5px 10px 4px;
+  color: rgba(44, 44, 42, 0.35) !important;
+  filter: none;
+}
+.note-tab-sticker--add::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border: 1.5px dashed rgba(44, 44, 42, 0.20);
+  clip-path: polygon(
+    0% 0%,
+    100% 0%,
+    96% 100%,
+    4% 100%
+  );
+}
+.note-tab-sticker--add:hover {
+  color: rgba(44, 44, 42, 0.60) !important;
+  filter: none;
+  opacity: 1;
+}
+.note-tab-sticker--add .note-tab-sticker-remove {
+  display: none !important;
+}
