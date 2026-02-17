@@ -12,31 +12,14 @@
  * - 탭 클릭 → 해당 탭 토글(제거)
  */
 
-import { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import { usePageMeta } from "@/features/editor/hooks/usePageMeta";
 
+// 네비게이션 탭 컬러와 동일 (LeftPanel NAV_ITEMS 기준)
 const TAB_OPTIONS = [
-  {
-    id: "run",
-    label: "달리기",
-    bg: "#FDE68A",      // 따뜻한 노랑
-    border: "#F5C842",
-    text: "#92710A",
-  },
-  {
-    id: "stand",
-    label: "서기",
-    bg: "#DDD6FE",      // 소프트 라벤더
-    border: "#B8A9F5",
-    text: "#5B4E8A",
-  },
-  {
-    id: "sit",
-    label: "앉기",
-    bg: "#A7F3D0",      // 소프트 민트
-    border: "#6EE7B7",
-    text: "#065F46",
-  },
+  { id: "run",   label: "달리기", bg: "#FAE9E4", text: "#7A3525" },
+  { id: "stand", label: "서기",   bg: "#E6F5EE", text: "#2A6347" },
+  { id: "sit",   label: "앉기",   bg: "#E4EDF8", text: "#2D4B7A" },
 ] as const;
 
 export default function NoteTabIndexes() {
@@ -65,19 +48,21 @@ export default function NoteTabIndexes() {
   }, []);
 
   return (
-    <div className="flex items-start gap-0">
-      {/* 활성 탭 (좌→우 배치, 즉 우측에서 누적시 left쪽 먼저) */}
+    // gap = 탭 가로 길이(80px)만큼 띄움
+    <div className="flex items-start" style={{ gap: "80px" }}>
+      {/* 활성 탭 (좌→우 배치 — container가 right-0이므로 우측부터 누적) */}
       {activeTabDefs.map((tab) => (
         <button
           key={tab.id}
           onClick={() => toggleTab(tab.id)}
           title={`${tab.label} 탭 제거`}
           className="note-tab-sticker group"
-          style={{
-            backgroundColor: tab.bg,
-            borderColor: tab.border,
-            color: tab.text,
-          }}
+          style={
+            {
+              "--tab-color": tab.bg,
+              color: tab.text,
+            } as React.CSSProperties
+          }
         >
           <span className="note-tab-sticker-label">{tab.label}</span>
           {/* hover 시 × 표시 */}
@@ -94,7 +79,7 @@ export default function NoteTabIndexes() {
             title="탭 추가"
             className="note-tab-sticker note-tab-sticker--add"
           >
-            <span className="note-tab-sticker-label">탭 추가</span>
+            <span className="note-tab-sticker-label">탭추가</span>
           </button>
 
           {/* 미니 팝오버 */}
@@ -117,7 +102,7 @@ export default function NoteTabIndexes() {
                 >
                   <span
                     className="w-2.5 h-2.5 rounded-sm shrink-0"
-                    style={{ backgroundColor: tab.bg, border: `1px solid ${tab.border}` }}
+                    style={{ backgroundColor: tab.bg }}
                   />
                   {tab.label}
                 </button>

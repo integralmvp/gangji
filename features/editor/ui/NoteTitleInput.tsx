@@ -51,7 +51,7 @@ const NoteTitleInput = forwardRef<HTMLInputElement, NoteTitleInputProps>(
         disabled={!currentPage}
         className="w-full bg-transparent border-none outline-none
           text-xl font-semibold text-ink leading-snug
-          placeholder:text-ink-muted/25
+          placeholder:text-ink-muted/55
           caret-ink disabled:opacity-0"
       />
     );
