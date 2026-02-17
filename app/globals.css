@@ -43,3 +43,89 @@ body {
   border-radius: 4px;
   box-shadow: 0 1px 3px rgba(44, 44, 42, 0.07), 0 0.5px 1px rgba(44, 44, 42, 0.04);
 }
+
+/* ── TipTap 에디터 스타일 (gangji-editor) ─────────────────────────── */
+.gangji-editor .tiptap {
+  outline: none;
+  min-height: 100%;
+  font-size: 0.875rem; /* text-sm */
+  line-height: 1.75;
+  color: var(--ink);
+  caret-color: var(--ink);
+}
+
+/* 플레이스홀더 */
+.gangji-editor .tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  color: rgba(140, 140, 138, 0.35);
+  pointer-events: none;
+  height: 0;
+}
+
+/* 제목 스타일 */
+.gangji-editor .tiptap h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.3;
+  margin: 1.25rem 0 0.5rem;
+  color: var(--ink);
+}
+.gangji-editor .tiptap h2 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  line-height: 1.4;
+  margin: 1rem 0 0.4rem;
+  color: var(--ink);
+}
+.gangji-editor .tiptap h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0.75rem 0 0.3rem;
+  color: var(--ink);
+}
+
+/* 단락 */
+.gangji-editor .tiptap p {
+  margin: 0.1rem 0;
+}
+
+/* 목록 */
+.gangji-editor .tiptap ul,
+.gangji-editor .tiptap ol {
+  padding-left: 1.5rem;
+  margin: 0.25rem 0;
+}
+.gangji-editor .tiptap li {
+  margin: 0.1rem 0;
+}
+.gangji-editor .tiptap ul li {
+  list-style-type: disc;
+}
+.gangji-editor .tiptap ol li {
+  list-style-type: decimal;
+}
+
+/* 형광펜 — Gangji 시그니처 */
+.gangji-editor .tiptap mark {
+  background-color: #FFEAA7;
+  border-radius: 2px;
+  padding: 0 1px;
+}
+
+/* 강조 */
+.gangji-editor .tiptap strong {
+  font-weight: 700;
+}
+.gangji-editor .tiptap em {
+  font-style: italic;
+}
+.gangji-editor .tiptap u {
+  text-decoration: underline;
+}
+
+/* 선택 영역 */
+.gangji-editor .tiptap ::selection {
+  background-color: rgba(44, 44, 42, 0.12);
+}
