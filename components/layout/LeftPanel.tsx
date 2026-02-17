@@ -5,19 +5,20 @@ import { useUIStore } from "@/store/uiStore";
 /**
  * LeftPanel — 좌측 인덱스 패널
  * - 패널 자체: glass blur 흰색 투명 배경
- * - 각 nav 아이템: 아이콘+타이틀 전체 배경에 파스텔 컬러 (포스트잇 탭)
+ * - 각 nav 아이템: 아이콘+타이틀 좌측 반 = 파스텔 컬러, 우측 나머지 = 화이트
+ * - 폰트: 흑색(ink) 통일
  */
 
-// 아이템별 파스텔 컬러 (흰기 섞인 낮은 채도)
+// 아이템별 파스텔 컬러
 const NAV_ITEMS = [
-  { id: "recent",    icon: "◷", label: "최근",   color: "#EDE9F8", textColor: "#6B5E8A" },
-  { id: "run",       icon: "▷", label: "달리기", color: "#FAE9E4", textColor: "#8A4F3E" },
-  { id: "stand",     icon: "│", label: "서기",   color: "#E6F5EE", textColor: "#3E7A5A" },
-  { id: "sit",       icon: "○", label: "앉기",   color: "#E4EDF8", textColor: "#3E5A8A" },
-  { id: "tabs",      icon: "⊟", label: "탭",     color: "#F5F2E0", textColor: "#7A6E3A" },
-  { id: "tags",      icon: "⊙", label: "보관소", color: "#F8E9F0", textColor: "#8A3E68" },
-  { id: "bookmarks", icon: "◈", label: "북마크", color: "#F5EDE0", textColor: "#8A5E3A" },
-  { id: "search",    icon: "⊕", label: "검색",   color: "#E8F5F0", textColor: "#3A7A6A" },
+  { id: "recent",    icon: "◷", label: "최근",   color: "#EDE9F8" },
+  { id: "run",       icon: "▷", label: "달리기", color: "#FAE9E4" },
+  { id: "stand",     icon: "│", label: "서기",   color: "#E6F5EE" },
+  { id: "sit",       icon: "○", label: "앉기",   color: "#E4EDF8" },
+  { id: "tabs",      icon: "⊟", label: "탭",     color: "#F5F2E0" },
+  { id: "tags",      icon: "⊙", label: "보관소", color: "#F8E9F0" },
+  { id: "bookmarks", icon: "◈", label: "북마크", color: "#F5EDE0" },
+  { id: "search",    icon: "⊕", label: "검색",   color: "#E8F5F0" },
 ];
 
 export default function LeftPanel() {
@@ -34,26 +35,42 @@ export default function LeftPanel() {
         {leftOpen ? "◂" : "▸"}
       </button>
 
-      {/* Nav Items — 아이콘 + 타이틀 전체 배경을 파스텔 컬러로 채운 포스트잇 탭 */}
+      {/* Nav Items — 좌측 컬러 영역 + 우측 화이트 영역 */}
       <nav className="flex-1 px-1.5 space-y-1 overflow-y-auto py-1">
         {NAV_ITEMS.map((item) => (
           <button
             key={item.id}
-            className="w-full flex items-center gap-2 px-2 py-1.5 rounded-sm hover:brightness-95 active:brightness-90 transition-all"
+            className="w-full flex rounded-sm overflow-hidden hover:brightness-95 active:brightness-90 transition-all text-ink"
             style={{
-              background: item.color,
-              color: item.textColor,
               boxShadow: "0 1px 3px rgba(44,44,42,0.10), 0 0.5px 1px rgba(44,44,42,0.06)",
-              border: `1px solid ${item.color}`,
             }}
             title={!leftOpen ? item.label : undefined}
           >
-            <span className="text-[11px] font-mono shrink-0 opacity-70">
-              {item.icon}
-            </span>
-            {leftOpen && (
-              <span className="text-xs font-medium leading-tight">
-                {item.label}
+            {leftOpen ? (
+              /* 펼침 상태: 좌측 절반 컬러 + 우측 절반 화이트 */
+              <>
+                <span
+                  className="flex items-center gap-2 px-2 py-1.5 w-1/2"
+                  style={{ background: item.color }}
+                >
+                  <span className="text-[11px] font-mono text-ink/60 shrink-0">
+                    {item.icon}
+                  </span>
+                  <span className="text-xs font-medium text-ink leading-tight truncate">
+                    {item.label}
+                  </span>
+                </span>
+                <span className="w-1/2 bg-white" />
+              </>
+            ) : (
+              /* 접힘 상태: 전체 컬러 (아이콘만) */
+              <span
+                className="flex items-center justify-center w-full py-1.5"
+                style={{ background: item.color }}
+              >
+                <span className="text-[11px] font-mono text-ink/60">
+                  {item.icon}
+                </span>
               </span>
             )}
           </button>
