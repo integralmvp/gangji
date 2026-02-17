@@ -1,154 +1,275 @@
 "use client";
 
 /**
- * CalendarCanvas
- * NOTE 중앙에 채워지는 달력 컨텐츠 (카드/박스 없음)
+ * CalendarCanvas — NOTE 중앙 달력 캔버스 (PR5)
  *
  * 레이아웃:
- * - 전체: 중앙 정렬 (flex items-center justify-center)
- * - 좌측: 소형 달력 3개 — 메인 달력 높이와 동일하게 flex-1 분배
- * - 우측: 대형 현재월 달력
+ * - 좌측: 세로 미니 3개월 (전월/현재월/다음월)
+ * - 우측: 현재 viewMonth 대형 달력
  *
- * 년월 표기: 소형/대형 모두 중앙 정렬
- * Phase A: 구조/레이아웃만 (데이터 연결은 PR5)
+ * 기능:
+ * - presence dot/★: 기록 존재 표시
+ * - Sprint 하이라이트: period 타입별 약한 배경색
+ * - 날짜 클릭: 해당 날짜 페이지 로드 → editor 전환
+ * - viewMonth 이동: 대형 달력 헤더 좌우 화살표
  */
+
+import { useState } from "react";
+import { useUIStore } from "@/store/uiStore";
+import { useSprintStore } from "@/store/sprintStore";
+import { useCalendarData } from "@/features/calendar/hooks/useCalendarData";
+import {
+  getMonthData,
+  toDateString,
+  isToday,
+  getPeriodForDate,
+  isInSprintRange,
+  PERIOD_COLORS,
+  PERIOD_CALENDAR_BG,
+} from "@/features/calendar/utils/calendarUtils";
+
+const DOW_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
+
 export default function CalendarCanvas() {
   const today = new Date();
+  const [viewMonth, setViewMonth] = useState(
+    () => new Date(today.getFullYear(), today.getMonth(), 1)
+  );
 
-  const getMonthData = (offset: number) => {
-    const d = new Date(today.getFullYear(), today.getMonth() + offset, 1);
-    const year = d.getFullYear();
-    const month = d.getMonth();
-    const monthName = d.toLocaleDateString("ko-KR", { year: "numeric", month: "long" });
-    const firstDow = d.getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
-    return { year, month, monthName, firstDow, daysInMonth };
+  const { openDateInEditor } = useUIStore();
+  const { currentSprint } = useSprintStore();
+  const { presence } = useCalendarData(viewMonth);
+
+  const handleDateClick = (dateStr: string) => {
+    openDateInEditor(dateStr);
   };
 
-  /**
-   * 소형 달력 — 컨테이너 높이를 꽉 채움 (flex-1 환경)
-   * 년월: 중앙 정렬
-   */
+  const goToPrevMonth = () =>
+    setViewMonth((d) => new Date(d.getFullYear(), d.getMonth() - 1, 1));
+  const goToNextMonth = () =>
+    setViewMonth((d) => new Date(d.getFullYear(), d.getMonth() + 1, 1));
+  const goToToday = () =>
+    setViewMonth(new Date(today.getFullYear(), today.getMonth(), 1));
+
+  // ── 날짜 셀 배경색 (sprint 하이라이트) ───────────────────────────────
+  const getCellBg = (dateStr: string): string => {
+    const period = getPeriodForDate(currentSprint, dateStr);
+    if (period) return PERIOD_CALENDAR_BG[period.type];
+    if (isInSprintRange(currentSprint, dateStr)) return PERIOD_CALENDAR_BG.sprint;
+    return "transparent";
+  };
+
+  // ── 소형 달력 렌더 ────────────────────────────────────────────────────
   const renderSmallCalendar = (offset: number) => {
-    const { monthName, firstDow, daysInMonth } = getMonthData(offset);
-    const cells = Array(firstDow).fill(null).concat(
-      Array.from({ length: daysInMonth }, (_, i) => i + 1)
-    );
-    const isCurrentMonth = offset === 0;
+    const data = getMonthData(viewMonth, offset);
+    const { year, month, monthName, firstDow, daysInMonth } = data;
+    const isCurrentView = offset === 0;
+
+    const cells: (number | null)[] = [
+      ...Array(firstDow).fill(null),
+      ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+    ];
 
     return (
       <div className="flex flex-col min-h-0 h-full">
-        {/* 년월 — 중앙 정렬 */}
+        {/* 년월 */}
         <div
-          className={`text-[11px] font-medium text-center mb-1.5 shrink-0
-            ${isCurrentMonth ? "text-ink" : "text-ink-muted"}`}
+          className={`text-[10px] font-medium text-center mb-1 shrink-0 ${
+            isCurrentView ? "text-ink" : "text-ink-muted"
+          }`}
         >
           {monthName}
         </div>
 
         {/* 요일 헤더 */}
-        <div className="grid grid-cols-7 shrink-0 pb-0.5 border-b border-ink/8 mb-1">
-          {["일","월","화","수","목","금","토"].map((d) => (
-            <div key={d} className="flex items-center justify-center text-[9px] text-ink-muted">
+        <div className="grid grid-cols-7 shrink-0 pb-0.5 border-b border-ink/8 mb-0.5">
+          {DOW_LABELS.map((d) => (
+            <div
+              key={d}
+              className="flex items-center justify-center text-[8px] text-ink-muted/60"
+            >
               {d}
             </div>
           ))}
         </div>
 
-        {/* 날짜 그리드 — 남은 공간 꽉 채움 */}
+        {/* 날짜 그리드 */}
         <div className="grid grid-cols-7 grid-rows-5 flex-1 min-h-0">
-          {cells.map((day, i) => (
-            <button
-              key={i}
-              disabled={day === null}
-              className={`flex items-center justify-center text-[10px] rounded-sm transition-colors
-                ${day === null ? "" : isCurrentMonth
-                  ? "text-ink hover:bg-ink/8"
-                  : "text-ink-muted hover:bg-ink/5"
-                }
-                ${day === today.getDate() && isCurrentMonth
-                  ? "font-semibold underline"
-                  : ""
-                }
-              `}
-            >
-              {day}
-            </button>
-          ))}
+          {cells.map((day, i) => {
+            if (!day) return <div key={i} />;
+            const dateStr = toDateString(year, month, day);
+            const todayFlag = isToday(dateStr, today);
+            const pres = presence[dateStr];
+            const cellBg = getCellBg(dateStr);
+
+            return (
+              <button
+                key={i}
+                onClick={() => handleDateClick(dateStr)}
+                className="relative flex items-center justify-center rounded-sm transition-colors hover:bg-ink/8"
+                style={{ background: cellBg !== "transparent" ? cellBg : undefined }}
+                title={dateStr}
+              >
+                <span
+                  className={`text-[9px] leading-none ${
+                    todayFlag
+                      ? "font-bold text-ink underline"
+                      : isCurrentView
+                      ? "text-ink/70"
+                      : "text-ink-muted/50"
+                  }`}
+                >
+                  {day}
+                </span>
+                {/* presence 표시 */}
+                {pres && (
+                  <span
+                    className="absolute bottom-0 right-0 text-[5px] leading-none"
+                    style={{ color: pres.bookmarked ? "#F39C12" : "#8C8C8A" }}
+                  >
+                    {pres.bookmarked ? "★" : "•"}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     );
   };
 
-  /**
-   * 대형 현재월 달력 — 컨테이너 높이를 꽉 채움
-   * 년월: 중앙 정렬
-   */
+  // ── 대형 달력 렌더 ────────────────────────────────────────────────────
   const renderLargeCalendar = () => {
-    const { monthName, firstDow, daysInMonth } = getMonthData(0);
-    const cells = Array(firstDow).fill(null).concat(
-      Array.from({ length: daysInMonth }, (_, i) => i + 1)
-    );
+    const data = getMonthData(viewMonth, 0);
+    const { year, month, monthName, firstDow, daysInMonth } = data;
+
+    const cells: (number | null)[] = [
+      ...Array(firstDow).fill(null),
+      ...Array.from({ length: daysInMonth }, (_, i) => i + 1),
+    ];
 
     return (
       <div className="flex flex-col h-full min-h-0">
-        {/* 년월 — 중앙 정렬 */}
-        <div className="text-base font-medium text-ink text-center mb-3 shrink-0">
-          {monthName}
+        {/* 헤더: 년월 + 네비게이션 */}
+        <div className="flex items-center justify-between mb-2 shrink-0 px-1">
+          <button
+            onClick={goToPrevMonth}
+            className="text-ink-muted/50 hover:text-ink text-xs px-1 transition-colors"
+            title="이전 달"
+          >
+            ‹
+          </button>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-ink">{monthName}</span>
+            {/* 오늘로 돌아오기 (현재월이 아닐 때만) */}
+            {(viewMonth.getFullYear() !== today.getFullYear() ||
+              viewMonth.getMonth() !== today.getMonth()) && (
+              <button
+                onClick={goToToday}
+                className="text-[9px] text-ink-muted/50 hover:text-ink border border-ink/15 rounded px-1 py-0.5 transition-colors"
+                title="오늘로"
+              >
+                오늘
+              </button>
+            )}
+          </div>
+          <button
+            onClick={goToNextMonth}
+            className="text-ink-muted/50 hover:text-ink text-xs px-1 transition-colors"
+            title="다음 달"
+          >
+            ›
+          </button>
         </div>
 
         {/* 요일 헤더 */}
         <div className="grid grid-cols-7 border-b border-ink/10 pb-1 mb-1 shrink-0">
-          {["일","월","화","수","목","금","토"].map((d) => (
-            <div key={d} className="text-center text-[11px] text-ink-muted font-medium py-0.5">
+          {DOW_LABELS.map((d) => (
+            <div
+              key={d}
+              className="text-center text-[11px] text-ink-muted font-medium py-0.5"
+            >
               {d}
             </div>
           ))}
         </div>
 
-        {/* 날짜 셀 — 남은 공간 꽉 채움 */}
+        {/* 날짜 그리드 */}
         <div className="grid grid-cols-7 grid-rows-5 flex-1 min-h-0">
-          {cells.map((day, i) => (
-            <button
-              key={i}
-              disabled={day === null}
-              className={`flex flex-col items-center justify-start pt-1 rounded transition-colors
-                ${day === null ? "" : "hover:bg-ink/5 cursor-pointer"}
-              `}
-            >
-              {day && (
+          {cells.map((day, i) => {
+            if (!day) return <div key={i} />;
+            const dateStr = toDateString(year, month, day);
+            const todayFlag = isToday(dateStr, today);
+            const pres = presence[dateStr];
+            const period = getPeriodForDate(currentSprint, dateStr);
+            const cellBg = getCellBg(dateStr);
+
+            return (
+              <button
+                key={i}
+                onClick={() => handleDateClick(dateStr)}
+                className="relative flex flex-col items-center pt-1 rounded transition-colors hover:bg-ink/6"
+                style={{ background: cellBg !== "transparent" ? cellBg : undefined }}
+                title={dateStr}
+              >
+                {/* 날짜 숫자 */}
                 <span
-                  className={`text-[13px] leading-none
-                    ${day === today.getDate() ? "font-semibold text-ink" : "text-ink-muted"}`}
+                  className={`text-[13px] leading-none ${
+                    todayFlag
+                      ? "font-bold text-ink"
+                      : "text-ink-muted"
+                  }`}
+                  style={todayFlag ? { textDecoration: "underline" } : undefined}
                 >
                   {day}
                 </span>
-              )}
-              {/* 기록 존재 dot (placeholder → PR5에서 교체) */}
-            </button>
-          ))}
+
+                {/* presence + period 표시 영역 */}
+                <div className="flex items-center gap-0.5 mt-0.5">
+                  {/* period 타입 아이콘 */}
+                  {period && (
+                    <span
+                      className="text-[8px] leading-none opacity-70"
+                      style={{ color: PERIOD_COLORS[period.type].text }}
+                      title={`${PERIOD_COLORS[period.type].label}: ${period.goal || ""}`}
+                    >
+                      {PERIOD_COLORS[period.type].icon}
+                    </span>
+                  )}
+                  {/* presence dot / 북마크 별 */}
+                  {pres && (
+                    <span
+                      className="text-[8px] leading-none"
+                      style={{ color: pres.bookmarked ? "#F39C12" : "#8C8C8A" }}
+                    >
+                      {pres.bookmarked ? "★" : "·"}
+                    </span>
+                  )}
+                </div>
+              </button>
+            );
+          })}
         </div>
       </div>
     );
   };
 
   return (
-    /* NOTE 전체 영역 — 내용을 수직/수평 중앙 배치 */
     <div className="h-full flex items-center justify-center p-8 overflow-hidden">
-      {/* 달력 컨테이너 — 화면 높이의 85%까지 */}
       <div className="flex gap-8 w-full" style={{ height: "min(520px, 85%)" }}>
 
-        {/* 좌측: 소형 3개월 달력 — 메인 달력 높이에 딱 맞게 3등분 */}
-        <div className="w-[168px] shrink-0 flex flex-col gap-3 border-r border-ink/10 pr-6">
+        {/* 좌측: 소형 3개월 달력 */}
+        <div className="w-[160px] shrink-0 flex flex-col gap-3 border-r border-ink/10 pr-6">
           <div className="flex-1 min-h-0">{renderSmallCalendar(-1)}</div>
           <div className="flex-1 min-h-0">{renderSmallCalendar(0)}</div>
           <div className="flex-1 min-h-0">{renderSmallCalendar(1)}</div>
         </div>
 
-        {/* 우측: 대형 현재월 달력 — NOTE 중앙에 위치 */}
+        {/* 우측: 대형 현재월 달력 */}
         <div className="flex-1 min-h-0 min-w-0">
           {renderLargeCalendar()}
         </div>
+
       </div>
     </div>
   );

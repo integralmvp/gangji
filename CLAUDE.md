@@ -563,6 +563,26 @@
 - Zustand uiStore: viewMode / leftOpen / rightOpen 상태
 - Dexie schema v2: pageNumber 인덱스 추가 + migration 완료
 
+**✅ PR4+PR7 — TipTap 에디터 + 자동 저장 + 메타데이터 UI + 에디터 도구 (완료: 2026-02-17)**
+- TipTap 에디터 연결 (useBlankEditor 훅, 500ms debounce 자동 저장)
+- 오늘 날짜 페이지 자동 생성/로드 (pageUtils)
+- BlankCanvas: title(상단) + tags + 북마크(★) + 탭 인덱스(사다리꼴)
+- EditorBubbleMenu: 선택 시 서식 팝업
+- RightToolbar: Bold/Italic/Underline, H1~H3, 목록, 형광펜, 텍스트 색(6색)
+- editorStore: editor 인스턴스 공유 (RightToolbar → TipTap 연결)
+
+**✅ PR5+PR6 — Calendar 흐름 지도 + Sprint/Flow System (완료: 2026-02-17)**
+- CalendarCanvas 완전 구현: presence dot(·)/북마크(★) + sprint 하이라이트 + 날짜 클릭 → editor 전환
+- 달력 월 이동 (← →) + 오늘 버튼
+- uiStore: selectedDate 추가 (달력 → editor 날짜 전달)
+- sprintStore: Sprint CRUD 전역 상태
+- useCalendarData: 3개월 pages presence 매핑 + sprint 로딩
+- calendarUtils: 순수 유틸 (getMonthData, getPeriodForDate, PERIOD_COLORS 등)
+- FlowSection: 우측 툴바 몰입기간 섹션 (Sprint 생성/편집 폼)
+- PeriodStrip: [달리기][서기][앉기] 스트립 시각화
+- PeriodEditor: Period 인라인 편집 (타입/목표/날짜)
+- useSprintFlow: Sprint/Period CRUD 폼 로직
+
 ---
 
 ### 16.2 현재 프로젝트 구조 (실제 구현)
@@ -571,29 +591,52 @@
 /home/user/gangji/
 ├── app/
 │   ├── layout.tsx
-│   ├── page.tsx                    # 메인 페이지 (3열 레이아웃 조립)
+│   ├── page.tsx                    # 메인 페이지 (3열 레이아웃 조립, selectedDate 전달)
 │   └── dev-storage/
 │       └── page.tsx                # Storage 스모크 테스트 페이지
 ├── components/
-│   ├── common/                     # 공용 컴포넌트 (준비됨)
+│   ├── common/
 │   └── layout/
 │       ├── LeftPanel.tsx           # 좌측 탐색/관리 패널 (glass, 포스트잇 탭)
-│       └── RightToolbar.tsx        # 우측 실행/도구 패널 (glass, 섹션 카드)
+│       └── RightToolbar.tsx        # 우측 실행/도구 패널 (FlowSection 포함)
 ├── features/
 │   ├── calendar/
-│   │   └── ui/
-│   │       └── CalendarCanvas.tsx  # 달력 컨텐츠 (소형 3개월 + 대형 현재월)
-│   └── editor/
+│   │   ├── hooks/
+│   │   │   └── useCalendarData.ts  # presence 매핑 + sprint 로딩
+│   │   ├── ui/
+│   │   │   └── CalendarCanvas.tsx  # 달력 (presence/sprint 하이라이트 + 날짜 클릭)
+│   │   └── utils/
+│   │       └── calendarUtils.ts    # 달력 순수 유틸 (getMonthData, PERIOD_COLORS 등)
+│   ├── editor/
+│   │   ├── hooks/
+│   │   │   ├── useBlankEditor.ts   # TipTap 에디터 + autosave
+│   │   │   └── usePageMeta.ts      # 메타데이터 CRUD (title/tags/tabs/bookmark)
+│   │   ├── ui/
+│   │   │   ├── BlankCanvas.tsx     # 백지 캔버스 (메타 UI + 에디터)
+│   │   │   ├── EditorBubbleMenu.tsx
+│   │   │   ├── NoteBookmark.tsx
+│   │   │   ├── NoteTabIndexes.tsx
+│   │   │   ├── NoteTagsInput.tsx
+│   │   │   └── NoteTitleInput.tsx
+│   │   └── utils/
+│   │       └── pageUtils.ts        # loadOrCreatePageByDate 등
+│   └── flow/
+│       ├── hooks/
+│       │   └── useSprintFlow.ts    # Sprint/Period CRUD 폼 로직
 │       └── ui/
-│           └── BlankCanvas.tsx     # 백지 컨텐츠 (autofocus + 쪽수)
+│           ├── FlowSection.tsx     # 우측 툴바 몰입기간 섹션
+│           ├── PeriodEditor.tsx    # Period 인라인 편집
+│           └── PeriodStrip.tsx     # [달리기][서기][앉기] 스트립
 ├── lib/
 │   └── storage/
-│       ├── adapter.ts              # StorageAdapter 인터페이스
-│       ├── db.ts                   # Dexie schema v2 (pageNumber migration 포함)
-│       ├── indexedDBAdapter.ts     # Dexie 구현체
-│       └── storage.ts              # Storage Facade 싱글톤
+│       ├── adapter.ts
+│       ├── db.ts                   # Dexie schema v2
+│       ├── indexedDBAdapter.ts
+│       └── storage.ts
 ├── store/
-│   └── uiStore.ts                  # UI 상태 (viewMode, leftOpen, rightOpen)
+│   ├── editorStore.ts              # editor 인스턴스 + currentPage 공유
+│   ├── sprintStore.ts              # Sprint CRUD 전역 상태 (PR6)
+│   └── uiStore.ts                  # viewMode / leftOpen / rightOpen / selectedDate
 └── types/
     └── models.ts                   # Page, Bundle, Sprint, Period 타입
 ```
@@ -613,10 +656,11 @@
 - sprints: startDate, endDate, updatedAt
 
 **구현된 메서드 (indexedDBAdapter.ts)**
-- Page CRUD: createPage, getPageByDate, updatePage, deletePage
-- Bundle CRUD: createBundle, getBundleById, updateBundle, deleteBundle
-- Sprint CRUD: createSprint, getActiveSprint, updateSprint, deleteSprint
-- Query: getPagesByDateRange, getBundlesByDateRange, getPagesByTabs, getPagesByTags, getBookmarkedPages
+- Page CRUD: savePage, getPage, getPageByDate, listPages, deletePage
+- Bundle CRUD: saveBundle, getBundle, listBundles, deleteBundle
+- Sprint CRUD: saveSprint, getSprint, getCurrentSprint, listSprints, deleteSprint
+- Query: getPagesByTag, getPagesByTab, getBookmarkedPages, getPagesByDateRange
+- PageNumber: getNextPageNumber
 
 ---
 
@@ -628,9 +672,11 @@ cd /home/user/gangji
 pnpm dev
 ```
 
-**스모크 테스트**
-- URL: http://localhost:3000/dev-storage
-- 모든 Storage 작업(CRUD + Query) 검증 가능
+**Sprint/Flow 핵심 동작**
+- Sprint는 endDate 없으면 "활성" 상태 (getCurrentSprint 기준)
+- Periods: type(run/stand/sit) + goal(1줄) + startDate + endDate(optional)
+- 달력 하이라이트: PERIOD_CALENDAR_BG 색상(calendarUtils), 매우 연한 파스텔
+- 달력 presence: content 60자 초과 OR title/tags/tabs/bookmark 중 하나라도 있으면 표시
 
 **데이터 구조 중요 사항**
 - content는 `string` (TipTap JSON을 stringify한 값)
@@ -639,8 +685,7 @@ pnpm dev
 - bundleId: nullable (단독 페이지 허용)
 - bookmarked: boolean (필드명 주의 — `bookmark`가 아닌 `bookmarked`)
 
-**다음 작업(PR4)**
-- TipTap 에디터 연결 (BlankCanvas에 실제 에디터 적용)
-- 500ms debounce 자동 저장
-- 오늘 날짜 페이지 자동 생성/로드
-- pageNumber 자동 부여 로직
+**다음 작업(PR8 — Export JSON 안전장치)**
+- 전체 데이터(Page/Bundle/Sprint) JSON 직렬화 Export
+- 파일 다운로드 UX (브라우저 download API)
+- Import는 Phase B

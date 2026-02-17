@@ -20,7 +20,7 @@ import BlankCanvas from "@/features/editor/ui/BlankCanvas";
  * - 중앙 NOTE: 헤더/푸터 없음, 콘텐츠만
  */
 export default function Home() {
-  const { viewMode, leftOpen, rightOpen } = useUIStore();
+  const { viewMode, leftOpen, rightOpen, selectedDate } = useUIStore();
 
   const leftWidth = leftOpen ? "160px" : "48px";
   const rightWidth = rightOpen ? "160px" : "48px";
@@ -38,7 +38,8 @@ export default function Home() {
         {viewMode === "calendar" ? (
           <CalendarCanvas />
         ) : (
-          <BlankCanvas />
+          // selectedDate가 있으면 해당 날짜, 없으면 오늘 로드
+          <BlankCanvas date={selectedDate ?? undefined} />
         )}
       </main>
 
