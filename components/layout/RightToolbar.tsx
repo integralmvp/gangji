@@ -12,6 +12,7 @@
 
 import { useUIStore } from "@/store/uiStore";
 import { useEditorStore } from "@/store/editorStore";
+import FlowSection from "@/features/flow/ui/FlowSection";
 
 // 섹션별 파스텔 컬러
 const COLORS = {
@@ -215,22 +216,22 @@ export default function RightToolbar() {
         </div>
       )}
 
-      {/* ── 몰입기간 자리 (PR6) ── */}
+      {/* ── 몰입기간 (PR6) ── */}
       <div className="mt-auto px-1.5 pb-2">
         <div
           className="rounded-sm overflow-hidden bg-white"
           style={{ boxShadow: "0 1px 3px rgba(44,44,42,0.10), 0 0.5px 1px rgba(44,44,42,0.06)" }}
         >
-          <div
-            className="flex justify-end px-2 pt-1.5 pb-1"
-            style={{ background: COLORS.flow.bg }}
-          >
-            <span className="text-[9px] font-semibold text-ink">
-              {rightOpen ? "몰입기간" : "F"}
-            </span>
-          </div>
-          <div className="p-2 bg-white">
-            <div className="text-[9px] text-ink-muted/40 text-center">PR6</div>
+          {rightOpen && (
+            <div
+              className="flex justify-end px-2 pt-1.5 pb-1"
+              style={{ background: COLORS.flow.bg }}
+            >
+              <span className="text-[9px] font-semibold text-ink">몰입기간</span>
+            </div>
+          )}
+          <div className="bg-white">
+            <FlowSection open={rightOpen} />
           </div>
         </div>
       </div>
