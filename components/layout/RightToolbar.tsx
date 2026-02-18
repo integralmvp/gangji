@@ -12,6 +12,7 @@
 
 import { useUIStore } from "@/store/uiStore";
 import { useEditorStore } from "@/store/editorStore";
+import FlowControlPanel from "@/features/flow/ui/FlowControlPanel";
 
 // 섹션별 파스텔 컬러
 const COLORS = {
@@ -78,6 +79,18 @@ export default function RightToolbar() {
           </div>
         </div>
       </div>
+
+      {/* ── 몰입기간 (달력 모드) ── */}
+      {viewMode === "calendar" && rightOpen && (
+        <div className="px-1.5 mb-2 flex-1 min-h-0">
+          <div
+            className="rounded-sm h-full flex flex-col overflow-hidden bg-white"
+            style={{ boxShadow: "0 1px 3px rgba(44,44,42,0.10), 0 0.5px 1px rgba(44,44,42,0.06)" }}
+          >
+            <FlowControlPanel />
+          </div>
+        </div>
+      )}
 
       {/* ── 문서 도구 (에디터 모드에서만) ── */}
       {viewMode === "editor" && (

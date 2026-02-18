@@ -11,6 +11,7 @@
 
 import type { Period } from "@/types/models";
 import { PERIOD_COLORS } from "@/features/calendar/utils/calendarUtils";
+import { PeriodIcon } from "@/components/common/PeriodIcons";
 
 type PeriodType = "run" | "stand" | "sit";
 
@@ -48,7 +49,7 @@ export default function PeriodEditor({
                 border: `1px solid ${active ? c.bg : "rgba(44,44,42,0.1)"}`,
               }}
             >
-              <span className="font-mono">{c.icon}</span>
+              <PeriodIcon type={t} size={10} color={active ? c.text : "#8C8C8A"} />
               <span>{c.label}</span>
             </button>
           );
