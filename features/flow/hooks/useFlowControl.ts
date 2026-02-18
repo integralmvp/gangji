@@ -1,14 +1,15 @@
 "use client";
 
 /**
- * useSprintFlow — Sprint 생성/편집 폼 상태 + 저장 로직
+ * useFlowControl — FlowControlPanel용 Sprint/Period CRUD 훅
  *
- * - Sprint 생성 폼 상태 관리
- * - Period 추가/편집/삭제
- * - sprintStore에 저장 위임
+ * - 전체 Sprint 목록 관리 (allSprints)
+ * - 선택된 Sprint 기준 Period 편집
+ * - Sprint 생성/수정/삭제
+ * - Period 추가/수정/삭제
  */
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 import { nanoid } from "nanoid";
 import { useSprintStore } from "@/store/sprintStore";
 import type { Sprint, Period } from "@/types/models";
@@ -21,33 +22,37 @@ interface SprintFormState {
   endDate: string;
 }
 
-/** 오늘 날짜 YYYY-MM-DD */
 function todayStr(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function useSprintFlow() {
-  const { currentSprint, loadCurrentSprint, saveSprint, createNewSprint, deleteSprint } =
-    useSprintStore();
+export function useFlowControl() {
+  const {
+    allSprints,
+    selectedSprintId,
+    selectSprint,
+    saveSprint,
+    createNewSprint,
+    deleteSprint,
+  } = useSprintStore();
+
+  const selectedSprint = allSprints.find((s) => s.id === selectedSprintId) ?? null;
 
   const [isCreating, setIsCreating] = useState(false);
   const [editingPeriodIdx, setEditingPeriodIdx] = useState<number | null>(null);
+  const [editingSprintMeta, setEditingSprintMeta] = useState(false);
+
   const [form, setForm] = useState<SprintFormState>({
     theme: "",
     startDate: todayStr(),
     endDate: "",
   });
 
-  // 초기 로딩
-  useEffect(() => {
-    loadCurrentSprint();
-  }, [loadCurrentSprint]);
-
-  // 폼 초기화
   const resetForm = useCallback(() => {
     setForm({ theme: "", startDate: todayStr(), endDate: "" });
     setIsCreating(false);
     setEditingPeriodIdx(null);
+    setEditingSprintMeta(false);
   }, []);
 
   // Sprint 생성
@@ -58,29 +63,30 @@ export function useSprintFlow() {
   }, [form, createNewSprint, resetForm]);
 
   // Sprint 삭제
-  const handleDeleteSprint = useCallback(async () => {
-    if (!currentSprint) return;
-    await deleteSprint(currentSprint.id);
-  }, [currentSprint, deleteSprint]);
+  const handleDeleteSprint = useCallback(async (id: string) => {
+    await deleteSprint(id);
+    setEditingPeriodIdx(null);
+  }, [deleteSprint]);
 
-  // Sprint theme/date 인라인 편집
-  const handleUpdateSprint = useCallback(
-    async (patch: Partial<Pick<Sprint, "theme" | "startDate" | "endDate">>) => {
-      if (!currentSprint) return;
+  // Sprint 메타(theme/startDate/endDate) 업데이트
+  const handleUpdateSprintMeta = useCallback(
+    async (id: string, patch: Partial<Pick<Sprint, "theme" | "startDate" | "endDate">>) => {
+      const sprint = allSprints.find((s) => s.id === id);
+      if (!sprint) return;
       const updated: Sprint = {
-        ...currentSprint,
+        ...sprint,
         ...patch,
         updatedAt: new Date().toISOString(),
       };
       await saveSprint(updated);
     },
-    [currentSprint, saveSprint]
+    [allSprints, saveSprint]
   );
 
   // Period 추가
   const handleAddPeriod = useCallback(
     async (type: PeriodType) => {
-      if (!currentSprint) return;
+      if (!selectedSprint) return;
       const newPeriod: Period = {
         type,
         goal: "",
@@ -88,60 +94,65 @@ export function useSprintFlow() {
         endDate: undefined,
       };
       const updated: Sprint = {
-        ...currentSprint,
-        periods: [...currentSprint.periods, newPeriod],
+        ...selectedSprint,
+        periods: [...selectedSprint.periods, newPeriod],
         updatedAt: new Date().toISOString(),
       };
       await saveSprint(updated);
       setEditingPeriodIdx(updated.periods.length - 1);
     },
-    [currentSprint, saveSprint]
+    [selectedSprint, saveSprint]
   );
 
   // Period 업데이트
   const handleUpdatePeriod = useCallback(
     async (idx: number, patch: Partial<Period>) => {
-      if (!currentSprint) return;
-      const periods = currentSprint.periods.map((p, i) =>
+      if (!selectedSprint) return;
+      const periods = selectedSprint.periods.map((p, i) =>
         i === idx ? { ...p, ...patch } : p
       );
       const updated: Sprint = {
-        ...currentSprint,
+        ...selectedSprint,
         periods,
         updatedAt: new Date().toISOString(),
       };
       await saveSprint(updated);
     },
-    [currentSprint, saveSprint]
+    [selectedSprint, saveSprint]
   );
 
   // Period 삭제
   const handleDeletePeriod = useCallback(
     async (idx: number) => {
-      if (!currentSprint) return;
-      const periods = currentSprint.periods.filter((_, i) => i !== idx);
+      if (!selectedSprint) return;
+      const periods = selectedSprint.periods.filter((_, i) => i !== idx);
       const updated: Sprint = {
-        ...currentSprint,
+        ...selectedSprint,
         periods,
         updatedAt: new Date().toISOString(),
       };
       await saveSprint(updated);
       setEditingPeriodIdx(null);
     },
-    [currentSprint, saveSprint]
+    [selectedSprint, saveSprint]
   );
 
   return {
-    currentSprint,
+    allSprints,
+    selectedSprint,
+    selectedSprintId,
+    selectSprint,
     isCreating,
     setIsCreating,
     editingPeriodIdx,
     setEditingPeriodIdx,
+    editingSprintMeta,
+    setEditingSprintMeta,
     form,
     setForm,
     handleCreateSprint,
     handleDeleteSprint,
-    handleUpdateSprint,
+    handleUpdateSprintMeta,
     handleAddPeriod,
     handleUpdatePeriod,
     handleDeletePeriod,

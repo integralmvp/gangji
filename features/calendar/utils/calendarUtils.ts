@@ -69,6 +69,34 @@ export function getPeriodForDate(
 }
 
 /**
+ * 여러 Sprint 중 특정 날짜에 해당하는 Sprint 반환
+ * 가장 최근 Sprint(목록 마지막) 우선
+ */
+export function getSprintForDate(
+  allSprints: Sprint[],
+  dateStr: string
+): Sprint | null {
+  // 역순 탐색: 가장 최근 sprint 우선
+  for (let i = allSprints.length - 1; i >= 0; i--) {
+    const s = allSprints[i];
+    if (dateStr < s.startDate) continue;
+    if (s.endDate && dateStr > s.endDate) continue;
+    return s;
+  }
+  return null;
+}
+
+/**
+ * 여러 Sprint 중 특정 날짜가 startDate인 Sprint 반환 (깃발 표시용)
+ */
+export function getSprintStartingOnDate(
+  allSprints: Sprint[],
+  dateStr: string
+): Sprint | null {
+  return allSprints.find((s) => s.startDate === dateStr) ?? null;
+}
+
+/**
  * Sprint 기간 범위 안에 있는지 확인 (period 여부 무관)
  */
 export function isInSprintRange(sprint: Sprint | null, dateStr: string): boolean {
@@ -79,31 +107,56 @@ export function isInSprintRange(sprint: Sprint | null, dateStr: string): boolean
 }
 
 /**
- * Period 타입별 색상 설정 (갱지 파스텔 팔레트)
+ * Period 타입별 색상/아이콘 설정 (갱지 파스텔 팔레트)
+ * 아이콘: 이모지 기반 (RUN=🏃, STAND=🧍, SIT=🪑)
  */
 export const PERIOD_COLORS = {
   run: {
     bg: "#FAE9E4",
     text: "#C0392B",
-    icon: "▷",
+    icon: "🏃",
     label: "달리기",
+    tint: "rgba(220, 90, 70, 0.10)",
   },
   stand: {
     bg: "#E6F5EE",
     text: "#27AE60",
-    icon: "│",
+    icon: "🧍",
     label: "서기",
+    tint: "rgba(50, 180, 100, 0.10)",
   },
   sit: {
     bg: "#E4EDF8",
     text: "#2E86AB",
-    icon: "○",
+    icon: "🪑",
     label: "앉기",
+    tint: "rgba(46, 134, 171, 0.10)",
   },
 } as const;
 
 /**
+ * Sprint 인덱스별 형광펜 하이라이트 색상 (누적 표시)
+ * 갱지 감성 — 채도 낮은 파스텔 형광펜 스타일
+ */
+export const SPRINT_HIGHLIGHT_COLORS = [
+  "rgba(255, 243, 100, 0.38)",  // 노란 형광펜
+  "rgba(120, 220, 170, 0.32)",  // 민트 형광펜
+  "rgba(130, 190, 240, 0.32)",  // 하늘 형광펜
+  "rgba(250, 165, 180, 0.30)",  // 핑크 형광펜
+  "rgba(200, 155, 240, 0.28)",  // 라벤더 형광펜
+  "rgba(255, 195, 110, 0.30)",  // 주황 형광펜
+] as const;
+
+/**
+ * Sprint 인덱스에 따른 하이라이트 색상 반환
+ */
+export function getSprintHighlightColor(sprintIndex: number): string {
+  return SPRINT_HIGHLIGHT_COLORS[sprintIndex % SPRINT_HIGHLIGHT_COLORS.length];
+}
+
+/**
  * Sprint 달력 하이라이트 배경색 (period 타입별, 더 연하게)
+ * @deprecated getSprintHighlightColor + PERIOD_COLORS.tint 사용 권장
  */
 export const PERIOD_CALENDAR_BG = {
   run: "rgba(250,233,228,0.55)",

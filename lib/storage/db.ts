@@ -8,7 +8,7 @@
  */
 
 import Dexie, { type EntityTable } from "dexie";
-import type { Page, Bundle, Sprint } from "@/types/models";
+import type { Page, Bundle, Sprint, CalendarEvent } from "@/types/models";
 
 /**
  * GangjiDB - Gangji 로컬 데이터베이스
@@ -18,6 +18,7 @@ export class GangjiDB extends Dexie {
   pages!: EntityTable<Page, "id">;
   bundles!: EntityTable<Bundle, "id">;
   sprints!: EntityTable<Sprint, "id">;
+  events!: EntityTable<CalendarEvent, "id">;
 
   constructor() {
     super("GangjiDB");
@@ -59,6 +60,15 @@ export class GangjiDB extends Dexie {
           }
         }
       });
+
+    // ============ Version 3 — CalendarEvent 테이블 추가 ============
+    this.version(3).stores({
+      pages: "id, date, pageNumber, bundleId, bookmarked, updatedAt, *tabs, *tags",
+      bundles: "id, startDate, endDate, updatedAt",
+      sprints: "id, startDate, endDate, updatedAt",
+      // events: id(PK), date 인덱스
+      events: "id, date, createdAt",
+    });
   }
 }
 

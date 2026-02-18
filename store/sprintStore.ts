@@ -4,10 +4,17 @@ import type { Sprint } from "@/types/models";
 import { storage } from "@/lib/storage/storage";
 
 interface SprintState {
+  /** 현재 활성 Sprint (endDate 없는 것) */
   currentSprint: Sprint | null;
+  /** 전체 Sprint 목록 (달력 누적 표시용) */
+  allSprints: Sprint[];
+  /** FlowControlPanel에서 선택된 Sprint ID */
+  selectedSprintId: string | null;
   isLoading: boolean;
 
   loadCurrentSprint: () => Promise<void>;
+  loadAllSprints: () => Promise<void>;
+  selectSprint: (id: string | null) => void;
   saveSprint: (sprint: Sprint) => Promise<void>;
   createNewSprint: (theme: string, startDate: string, endDate?: string) => Promise<Sprint>;
   deleteSprint: (id: string) => Promise<void>;
@@ -15,11 +22,14 @@ interface SprintState {
 
 /**
  * SprintStore — 몰입기간(Sprint) 전역 상태
- * - 현재 활성 Sprint 1개를 기본 단위로 관리
- * - 히스토리 다중 관리는 Phase B
+ * - currentSprint: 활성 Sprint
+ * - allSprints: 달력 누적 표시용 전체 목록
+ * - selectedSprintId: FlowControlPanel 선택 상태
  */
-export const useSprintStore = create<SprintState>((set) => ({
+export const useSprintStore = create<SprintState>((set, get) => ({
   currentSprint: null,
+  allSprints: [],
+  selectedSprintId: null,
   isLoading: false,
 
   loadCurrentSprint: async () => {
@@ -32,9 +42,28 @@ export const useSprintStore = create<SprintState>((set) => ({
     }
   },
 
+  loadAllSprints: async () => {
+    const sprints = await storage.listSprints();
+    // startDate 오름차순 정렬 (생성순)
+    const sorted = [...sprints].sort((a, b) =>
+      a.startDate.localeCompare(b.startDate)
+    );
+    const current = sorted.find((s) => !s.endDate) ?? null;
+    set({ allSprints: sorted, currentSprint: current });
+  },
+
+  selectSprint: (id) => set({ selectedSprintId: id }),
+
   saveSprint: async (sprint: Sprint) => {
     await storage.saveSprint(sprint);
-    set({ currentSprint: sprint });
+    // allSprints 동기화
+    const all = get().allSprints;
+    const idx = all.findIndex((s) => s.id === sprint.id);
+    const updated = idx >= 0
+      ? all.map((s) => (s.id === sprint.id ? sprint : s))
+      : [...all, sprint].sort((a, b) => a.startDate.localeCompare(b.startDate));
+    const current = updated.find((s) => !s.endDate) ?? null;
+    set({ allSprints: updated, currentSprint: current });
   },
 
   createNewSprint: async (theme, startDate, endDate) => {
@@ -49,12 +78,19 @@ export const useSprintStore = create<SprintState>((set) => ({
       updatedAt: now,
     };
     await storage.saveSprint(sprint);
-    set({ currentSprint: sprint });
+    const all = [...get().allSprints, sprint].sort((a, b) =>
+      a.startDate.localeCompare(b.startDate)
+    );
+    const current = all.find((s) => !s.endDate) ?? null;
+    set({ allSprints: all, currentSprint: current, selectedSprintId: sprint.id });
     return sprint;
   },
 
   deleteSprint: async (id) => {
     await storage.deleteSprint(id);
-    set({ currentSprint: null });
+    const all = get().allSprints.filter((s) => s.id !== id);
+    const current = all.find((s) => !s.endDate) ?? null;
+    const selectedSprintId = get().selectedSprintId === id ? null : get().selectedSprintId;
+    set({ allSprints: all, currentSprint: current, selectedSprintId });
   },
 }));

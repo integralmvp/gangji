@@ -5,20 +5,18 @@
  *
  * - 패널 자체: glass blur 흰색 투명 배경
  * - 각 섹션 카드: 헤더(타이틀) = 파스텔 컬러, 콘텐츠 = 화이트
- * - 폰트: 흑색(ink) 통일
  *
- * PR4+PR7: 에디터 도구를 실제 editor 인스턴스에 연결
+ * 뷰 전환 (calendar ↔ editor) + 에디터 모드에서만 문서 도구 표시
+ * Flow 관리 UI는 CalendarCanvas 내부 FlowControlPanel에서 담당
  */
 
 import { useUIStore } from "@/store/uiStore";
 import { useEditorStore } from "@/store/editorStore";
-import FlowSection from "@/features/flow/ui/FlowSection";
 
 // 섹션별 파스텔 컬러
 const COLORS = {
   view:  { bg: "#EDE9F8" }, // soft lavender
   tools: { bg: "#E4EDF8" }, // soft sky blue
-  flow:  { bg: "#F5F2E0" }, // soft warm yellow
 };
 
 // 제한된 텍스트 컬러 팔레트 (6색)
@@ -215,26 +213,6 @@ export default function RightToolbar() {
           </div>
         </div>
       )}
-
-      {/* ── 몰입기간 (PR6) ── */}
-      <div className="mt-auto px-1.5 pb-2">
-        <div
-          className="rounded-sm overflow-hidden bg-white"
-          style={{ boxShadow: "0 1px 3px rgba(44,44,42,0.10), 0 0.5px 1px rgba(44,44,42,0.06)" }}
-        >
-          {rightOpen && (
-            <div
-              className="flex justify-end px-2 pt-1.5 pb-1"
-              style={{ background: COLORS.flow.bg }}
-            >
-              <span className="text-[9px] font-semibold text-ink">몰입기간</span>
-            </div>
-          )}
-          <div className="bg-white">
-            <FlowSection open={rightOpen} />
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

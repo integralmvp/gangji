@@ -7,7 +7,7 @@
 
 import { db } from "./db";
 import type { StorageAdapter } from "./adapter";
-import type { Page, Bundle, Sprint } from "@/types/models";
+import type { Page, Bundle, Sprint, CalendarEvent } from "@/types/models";
 
 export class IndexedDBAdapter implements StorageAdapter {
   // ============ Page 관련 ============
@@ -169,5 +169,29 @@ export class IndexedDBAdapter implements StorageAdapter {
       .where("date")
       .between(startDate, endDate, true, true)
       .toArray();
+  }
+
+  // ============ CalendarEvent 관련 ============
+
+  async saveEvent(event: CalendarEvent): Promise<void> {
+    await db.events.put(event);
+  }
+
+  async getEventsByDate(date: string): Promise<CalendarEvent[]> {
+    return await db.events.where("date").equals(date).toArray();
+  }
+
+  async getEventsByDateRange(
+    startDate: string,
+    endDate: string
+  ): Promise<CalendarEvent[]> {
+    return await db.events
+      .where("date")
+      .between(startDate, endDate, true, true)
+      .toArray();
+  }
+
+  async deleteEvent(id: string): Promise<void> {
+    await db.events.delete(id);
   }
 }

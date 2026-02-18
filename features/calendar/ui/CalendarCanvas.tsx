@@ -1,32 +1,39 @@
 "use client";
 
 /**
- * CalendarCanvas — NOTE 중앙 달력 캔버스 (PR5)
+ * CalendarCanvas — NOTE 중앙 달력 캔버스
  *
  * 레이아웃:
- * - 좌측: 세로 미니 3개월 (전월/현재월/다음월)
- * - 우측: 현재 viewMonth 대형 달력
+ * - 상단: 2열 (소형 3개월 미니맵 | 대형 현재월)
+ * - 하단: FlowControlPanel (Flow 관리 전용)
  *
- * 기능:
- * - presence dot/★: 기록 존재 표시
- * - Sprint 하이라이트: period 타입별 약한 배경색
- * - 날짜 클릭: 해당 날짜 페이지 로드 → editor 전환
- * - viewMonth 이동: 대형 달력 헤더 좌우 화살표
+ * 시각화 레이어 (아래→위):
+ * 1. Sprint 형광펜 하이라이트 (Sprint별 색상)
+ * 2. Period 배경 tint (RUN/STAND/SIT)
+ * 3. Sprint 시작일 🚩 깃발
+ * 4. Period 아이콘 (🏃/🧍/🪑)
+ * 5. presence dot (기록 존재) / ★ (북마크)
+ * 6. Event dot (일정 존재)
+ *
+ * 날짜 클릭 → EventModal 오픈 (editor 이동 없음)
  */
 
 import { useState } from "react";
-import { useUIStore } from "@/store/uiStore";
 import { useSprintStore } from "@/store/sprintStore";
+import { useEventStore } from "@/store/eventStore";
 import { useCalendarData } from "@/features/calendar/hooks/useCalendarData";
 import {
   getMonthData,
   toDateString,
   isToday,
   getPeriodForDate,
-  isInSprintRange,
+  getSprintForDate,
+  getSprintStartingOnDate,
+  getSprintHighlightColor,
   PERIOD_COLORS,
-  PERIOD_CALENDAR_BG,
 } from "@/features/calendar/utils/calendarUtils";
+import EventModal from "./EventModal";
+import FlowControlPanel from "@/features/flow/ui/FlowControlPanel";
 
 const DOW_LABELS = ["일", "월", "화", "수", "목", "금", "토"];
 
@@ -36,12 +43,12 @@ export default function CalendarCanvas() {
     () => new Date(today.getFullYear(), today.getMonth(), 1)
   );
 
-  const { openDateInEditor } = useUIStore();
-  const { currentSprint } = useSprintStore();
+  const { allSprints } = useSprintStore();
+  const { modalDate, openModal, closeModal, eventsByDate } = useEventStore();
   const { presence } = useCalendarData(viewMonth);
 
   const handleDateClick = (dateStr: string) => {
-    openDateInEditor(dateStr);
+    openModal(dateStr);
   };
 
   const goToPrevMonth = () =>
@@ -51,12 +58,20 @@ export default function CalendarCanvas() {
   const goToToday = () =>
     setViewMonth(new Date(today.getFullYear(), today.getMonth(), 1));
 
-  // ── 날짜 셀 배경색 (sprint 하이라이트) ───────────────────────────────
-  const getCellBg = (dateStr: string): string => {
-    const period = getPeriodForDate(currentSprint, dateStr);
-    if (period) return PERIOD_CALENDAR_BG[period.type];
-    if (isInSprintRange(currentSprint, dateStr)) return PERIOD_CALENDAR_BG.sprint;
-    return "transparent";
+  // ── 날짜 셀 배경 계산 ─────────────────────────────────────────────────
+  /** Sprint 형광펜 하이라이트 색상 반환 */
+  const getSprintHighlight = (dateStr: string): string | null => {
+    const sprint = getSprintForDate(allSprints, dateStr);
+    if (!sprint) return null;
+    const idx = allSprints.indexOf(sprint);
+    return getSprintHighlightColor(idx);
+  };
+
+  /** Period tint 반환 */
+  const getPeriodTint = (dateStr: string): string | null => {
+    const sprint = getSprintForDate(allSprints, dateStr);
+    const period = getPeriodForDate(sprint, dateStr);
+    return period ? PERIOD_COLORS[period.type].tint : null;
   };
 
   // ── 소형 달력 렌더 ────────────────────────────────────────────────────
@@ -100,16 +115,43 @@ export default function CalendarCanvas() {
             const dateStr = toDateString(year, month, day);
             const todayFlag = isToday(dateStr, today);
             const pres = presence[dateStr];
-            const cellBg = getCellBg(dateStr);
+            const highlight = getSprintHighlight(dateStr);
+            const tint = getPeriodTint(dateStr);
+            const sprint = getSprintForDate(allSprints, dateStr);
+            const period = sprint ? getPeriodForDate(sprint, dateStr) : null;
+            const flagSprint = getSprintStartingOnDate(allSprints, dateStr);
+            const hasEvents = (eventsByDate[dateStr]?.length ?? 0) > 0;
+
+            // 배경: 형광펜 + period tint 합성
+            const bgStyle: React.CSSProperties = {};
+            if (highlight || tint) {
+              const colors: string[] = [];
+              if (tint) colors.push(tint);
+              if (highlight) colors.push(highlight);
+              if (colors.length === 2) {
+                bgStyle.background = `linear-gradient(135deg, ${tint} 0%, ${highlight} 100%)`;
+              } else if (colors.length === 1) {
+                bgStyle.background = colors[0];
+              }
+            }
 
             return (
               <button
                 key={i}
                 onClick={() => handleDateClick(dateStr)}
                 className="relative flex items-center justify-center rounded-sm transition-colors hover:bg-ink/8"
-                style={{ background: cellBg !== "transparent" ? cellBg : undefined }}
+                style={bgStyle}
                 title={dateStr}
               >
+                {/* 깃발 (Sprint 시작일) */}
+                {flagSprint && (
+                  <span
+                    className="absolute top-0 left-0 text-[5px] leading-none"
+                    title={flagSprint.theme}
+                  >
+                    🚩
+                  </span>
+                )}
                 <span
                   className={`text-[9px] leading-none ${
                     todayFlag
@@ -121,7 +163,13 @@ export default function CalendarCanvas() {
                 >
                   {day}
                 </span>
-                {/* presence 표시 */}
+                {/* period 아이콘 (미니) */}
+                {period && (
+                  <span className="absolute bottom-0 left-0 text-[5px] leading-none">
+                    {PERIOD_COLORS[period.type].icon}
+                  </span>
+                )}
+                {/* presence */}
                 {pres && (
                   <span
                     className="absolute bottom-0 right-0 text-[5px] leading-none"
@@ -129,6 +177,10 @@ export default function CalendarCanvas() {
                   >
                     {pres.bookmarked ? "★" : "•"}
                   </span>
+                )}
+                {/* event dot */}
+                {hasEvents && !pres && (
+                  <span className="absolute bottom-0 right-0 w-1 h-1 rounded-full bg-ink/30" />
                 )}
               </button>
             );
@@ -161,12 +213,12 @@ export default function CalendarCanvas() {
           </button>
           <div className="flex items-center gap-2">
             <span className="text-sm font-medium text-ink">{monthName}</span>
-            {/* 오늘로 돌아오기 (현재월이 아닐 때만) */}
             {(viewMonth.getFullYear() !== today.getFullYear() ||
               viewMonth.getMonth() !== today.getMonth()) && (
               <button
                 onClick={goToToday}
-                className="text-[9px] text-ink-muted/50 hover:text-ink border border-ink/15 rounded px-1 py-0.5 transition-colors"
+                className="text-[9px] text-ink-muted/50 hover:text-ink border border-ink/15
+                  rounded px-1 py-0.5 transition-colors"
                 title="오늘로"
               >
                 오늘
@@ -201,51 +253,107 @@ export default function CalendarCanvas() {
             const dateStr = toDateString(year, month, day);
             const todayFlag = isToday(dateStr, today);
             const pres = presence[dateStr];
-            const period = getPeriodForDate(currentSprint, dateStr);
-            const cellBg = getCellBg(dateStr);
+            const highlight = getSprintHighlight(dateStr);
+            const tint = getPeriodTint(dateStr);
+            const sprint = getSprintForDate(allSprints, dateStr);
+            const period = sprint ? getPeriodForDate(sprint, dateStr) : null;
+            const flagSprint = getSprintStartingOnDate(allSprints, dateStr);
+            const events = eventsByDate[dateStr] ?? [];
+
+            // 배경: 형광펜 + period tint
+            const bgStyle: React.CSSProperties = {};
+            if (highlight || tint) {
+              if (highlight && tint) {
+                bgStyle.background = `linear-gradient(135deg, ${tint} 0%, ${highlight} 100%)`;
+              } else {
+                bgStyle.background = (highlight ?? tint)!;
+              }
+            }
 
             return (
               <button
                 key={i}
                 onClick={() => handleDateClick(dateStr)}
-                className="relative flex flex-col items-center pt-1 rounded transition-colors hover:bg-ink/6"
-                style={{ background: cellBg !== "transparent" ? cellBg : undefined }}
+                className="relative flex flex-col items-center pt-1 rounded transition-colors
+                  hover:bg-ink/6 group"
+                style={bgStyle}
                 title={dateStr}
               >
+                {/* 깃발 (Sprint 시작일) — hover시 tooltip */}
+                {flagSprint && (
+                  <div className="absolute top-0.5 left-1 flex items-center gap-0.5 z-10">
+                    <span
+                      className="text-[10px] leading-none cursor-pointer"
+                      title={`🚩 ${flagSprint.theme}`}
+                    >
+                      🚩
+                    </span>
+                    {/* hover tooltip */}
+                    <span
+                      className="absolute left-5 top-0 bg-ink/80 text-white text-[9px]
+                        rounded px-1.5 py-0.5 whitespace-nowrap pointer-events-none
+                        opacity-0 group-hover:opacity-100 transition-opacity z-20"
+                      style={{ fontSize: "9px" }}
+                    >
+                      {flagSprint.theme}
+                    </span>
+                  </div>
+                )}
+
                 {/* 날짜 숫자 */}
                 <span
                   className={`text-[13px] leading-none ${
-                    todayFlag
-                      ? "font-bold text-ink"
-                      : "text-ink-muted"
+                    todayFlag ? "font-bold text-ink" : "text-ink-muted"
                   }`}
                   style={todayFlag ? { textDecoration: "underline" } : undefined}
                 >
                   {day}
                 </span>
 
-                {/* presence + period 표시 영역 */}
-                <div className="flex items-center gap-0.5 mt-0.5">
+                {/* 아이콘 + presence 영역 */}
+                <div className="flex items-center gap-0.5 mt-0.5 flex-wrap justify-center">
                   {/* period 타입 아이콘 */}
                   {period && (
                     <span
-                      className="text-[8px] leading-none opacity-70"
-                      style={{ color: PERIOD_COLORS[period.type].text }}
-                      title={`${PERIOD_COLORS[period.type].label}: ${period.goal || ""}`}
+                      className="text-[11px] leading-none"
+                      title={`${PERIOD_COLORS[period.type].label}${period.goal ? ` — ${period.goal}` : ""}`}
                     >
                       {PERIOD_COLORS[period.type].icon}
                     </span>
                   )}
+
                   {/* presence dot / 북마크 별 */}
                   {pres && (
                     <span
-                      className="text-[8px] leading-none"
+                      className="text-[9px] leading-none"
                       style={{ color: pres.bookmarked ? "#F39C12" : "#8C8C8A" }}
+                      title="기록 있음"
                     >
                       {pres.bookmarked ? "★" : "·"}
                     </span>
                   )}
                 </div>
+
+                {/* 이벤트 목록 (최대 2개 미리보기) */}
+                {events.length > 0 && (
+                  <div className="w-full px-0.5 mt-0.5 space-y-px">
+                    {events.slice(0, 2).map((ev) => (
+                      <div
+                        key={ev.id}
+                        className="text-[8px] leading-tight text-ink/60 truncate
+                          bg-ink/5 rounded px-0.5"
+                        title={ev.text}
+                      >
+                        {ev.text}
+                      </div>
+                    ))}
+                    {events.length > 2 && (
+                      <div className="text-[8px] text-ink-muted/40 text-center">
+                        +{events.length - 2}
+                      </div>
+                    )}
+                  </div>
+                )}
               </button>
             );
           })}
@@ -255,22 +363,37 @@ export default function CalendarCanvas() {
   };
 
   return (
-    <div className="h-full flex items-center justify-center p-8 overflow-hidden">
-      <div className="flex gap-8 w-full" style={{ height: "min(520px, 85%)" }}>
+    <div className="h-full overflow-y-auto">
+      {/* 달력 섹션 */}
+      <div className="p-6 pb-4">
+        <div className="flex gap-8" style={{ height: "min(480px, 70vh)" }}>
 
-        {/* 좌측: 소형 3개월 달력 */}
-        <div className="w-[160px] shrink-0 flex flex-col gap-3 border-r border-ink/10 pr-6">
-          <div className="flex-1 min-h-0">{renderSmallCalendar(-1)}</div>
-          <div className="flex-1 min-h-0">{renderSmallCalendar(0)}</div>
-          <div className="flex-1 min-h-0">{renderSmallCalendar(1)}</div>
+          {/* 좌측: 소형 3개월 달력 */}
+          <div className="w-[160px] shrink-0 flex flex-col gap-3 border-r border-ink/10 pr-6">
+            <div className="flex-1 min-h-0">{renderSmallCalendar(-1)}</div>
+            <div className="flex-1 min-h-0">{renderSmallCalendar(0)}</div>
+            <div className="flex-1 min-h-0">{renderSmallCalendar(1)}</div>
+          </div>
+
+          {/* 우측: 대형 현재월 달력 */}
+          <div className="flex-1 min-h-0 min-w-0">
+            {renderLargeCalendar()}
+          </div>
+
         </div>
-
-        {/* 우측: 대형 현재월 달력 */}
-        <div className="flex-1 min-h-0 min-w-0">
-          {renderLargeCalendar()}
-        </div>
-
       </div>
+
+      {/* Flow Control Panel 섹션 */}
+      <div className="px-6 pb-8">
+        <div className="border-t border-ink/8 pt-6">
+          <FlowControlPanel />
+        </div>
+      </div>
+
+      {/* Event Modal */}
+      {modalDate && (
+        <EventModal date={modalDate} onClose={closeModal} />
+      )}
     </div>
   );
 }
