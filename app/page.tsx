@@ -23,7 +23,9 @@ export default function Home() {
   const { viewMode, leftOpen, rightOpen, selectedDate } = useUIStore();
 
   const leftWidth = leftOpen ? "160px" : "48px";
-  const rightWidth = rightOpen ? "160px" : "48px";
+  const rightWidth = rightOpen
+    ? viewMode === "calendar" ? "260px" : "160px"
+    : "48px";
 
   return (
     <div

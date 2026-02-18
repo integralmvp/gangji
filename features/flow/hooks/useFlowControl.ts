@@ -83,23 +83,16 @@ export function useFlowControl() {
     [allSprints, saveSprint]
   );
 
-  // Period 추가
+  // Period 추가 (전체 Period 객체를 받아 저장)
   const handleAddPeriod = useCallback(
-    async (type: PeriodType) => {
+    async (newPeriod: Period) => {
       if (!selectedSprint) return;
-      const newPeriod: Period = {
-        type,
-        goal: "",
-        startDate: todayStr(),
-        endDate: undefined,
-      };
       const updated: Sprint = {
         ...selectedSprint,
         periods: [...selectedSprint.periods, newPeriod],
         updatedAt: new Date().toISOString(),
       };
       await saveSprint(updated);
-      setEditingPeriodIdx(updated.periods.length - 1);
     },
     [selectedSprint, saveSprint]
   );

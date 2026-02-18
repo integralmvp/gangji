@@ -114,23 +114,21 @@ export const PERIOD_COLORS = {
   run: {
     bg: "#FAE9E4",
     text: "#C0392B",
-    icon: "🏃",
     label: "달리기",
-    tint: "rgba(220, 90, 70, 0.10)",
+    /** 달력 셀 배경 tint (대형 달력 전용) */
+    cellBg: "rgba(220, 80, 60, 0.13)",
   },
   stand: {
     bg: "#E6F5EE",
     text: "#27AE60",
-    icon: "🧍",
     label: "서기",
-    tint: "rgba(50, 180, 100, 0.10)",
+    cellBg: "rgba(40, 174, 96, 0.11)",
   },
   sit: {
     bg: "#E4EDF8",
     text: "#2E86AB",
-    icon: "🪑",
     label: "앉기",
-    tint: "rgba(46, 134, 171, 0.10)",
+    cellBg: "rgba(46, 134, 171, 0.13)",
   },
 } as const;
 
