@@ -4,13 +4,14 @@
  * useCalendarData — 달력 데이터 로딩 훅
  *
  * - viewMonth 기준 전월/현재월/다음월 날짜 범위의 Page presence 매핑
- * - 현재 활성 Sprint 로딩 (달력 하이라이트용)
- * - 상태: presence map + sprint
+ * - 전체 Sprint 로딩 (달력 누적 하이라이트용)
+ * - CalendarEvent 로딩 (날짜별 이벤트)
  */
 
 import { useEffect, useMemo, useState } from "react";
 import { storage } from "@/lib/storage/storage";
 import { useSprintStore } from "@/store/sprintStore";
+import { useEventStore } from "@/store/eventStore";
 import { getThreeMonthRange } from "@/features/calendar/utils/calendarUtils";
 
 export interface PresenceInfo {
@@ -51,7 +52,8 @@ export function useCalendarData(viewMonth: Date): CalendarData {
   const [isLoading, setIsLoading] = useState(true);
   const [tick, setTick] = useState(0);
 
-  const { loadCurrentSprint } = useSprintStore();
+  const { loadAllSprints } = useSprintStore();
+  const { loadEventsByDateRange } = useEventStore();
 
   const { startDate, endDate } = useMemo(
     () => getThreeMonthRange(viewMonth),
@@ -59,10 +61,11 @@ export function useCalendarData(viewMonth: Date): CalendarData {
     [viewMonth.getFullYear(), viewMonth.getMonth()]
   );
 
-  // Sprint 로딩 (앱 레벨에서 한 번만)
+  // 전체 Sprint + Events 로딩 (달력 범위 변경 시)
   useEffect(() => {
-    loadCurrentSprint();
-  }, [loadCurrentSprint]);
+    loadAllSprints();
+    loadEventsByDateRange(startDate, endDate);
+  }, [loadAllSprints, loadEventsByDateRange, startDate, endDate]);
 
   // Pages presence 로딩
   useEffect(() => {

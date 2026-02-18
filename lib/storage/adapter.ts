@@ -6,7 +6,7 @@
  * 향후 구현: Desktop(Tauri)+SQLite / Mobile(Capacitor)+SQLite / File-based
  */
 
-import type { Page, Bundle, Sprint } from "@/types/models";
+import type { Page, Bundle, Sprint, CalendarEvent } from "@/types/models";
 
 export interface StorageAdapter {
   // ============ Page 관련 ============
@@ -87,6 +87,27 @@ export interface StorageAdapter {
    * 다음 pageNumber 반환 (현재 최댓값 + 1)
    */
   getNextPageNumber(): Promise<number>;
+
+  // ============ CalendarEvent 관련 ============
+  /**
+   * Event 저장 (생성 또는 업데이트)
+   */
+  saveEvent(event: CalendarEvent): Promise<void>;
+
+  /**
+   * 날짜로 Event 목록 조회 (YYYY-MM-DD)
+   */
+  getEventsByDate(date: string): Promise<CalendarEvent[]>;
+
+  /**
+   * 날짜 범위로 Event 목록 조회
+   */
+  getEventsByDateRange(startDate: string, endDate: string): Promise<CalendarEvent[]>;
+
+  /**
+   * Event 삭제
+   */
+  deleteEvent(id: string): Promise<void>;
 
   // ============ Query 관련 ============
   /**

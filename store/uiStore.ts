@@ -18,8 +18,6 @@ interface UIState {
   toggleViewMode: () => void;
   toggleLeft: () => void;
   toggleRight: () => void;
-  /** 날짜 선택 + editor 뷰 전환을 한 번에 처리 */
-  openDateInEditor: (date: string) => void;
 }
 
 /**
@@ -43,6 +41,4 @@ export const useUIStore = create<UIState>((set) => ({
 
   toggleLeft: () => set((state) => ({ leftOpen: !state.leftOpen })),
   toggleRight: () => set((state) => ({ rightOpen: !state.rightOpen })),
-
-  openDateInEditor: (date) => set({ selectedDate: date, viewMode: "editor" }),
 }));

@@ -47,6 +47,17 @@ export interface Page {
 }
 
 /**
+ * CalendarEvent - 달력 기록형 일정 (MVP)
+ * 완료/체크/알림 없음 — "기록형 일정"
+ */
+export interface CalendarEvent {
+  id: string;
+  date: string; // YYYY-MM-DD
+  text: string;
+  createdAt: string; // ISO string
+}
+
+/**
  * Bundle - 이어쓰기/연속 기록의 관리 단위 (UI 기준 단위)
  * "묶음" 개념 - 한 번의 작성 흐름이 여러 장으로 이어질 때
  */
